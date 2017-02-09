@@ -75,22 +75,45 @@ bool search(int value, int values[], int n)
     }
     
     // Try binary search
-    int half = values[n/2];
-    printf("halway point: %d\n", half);
-    printf("you gave value: %d\n", value);
+    // TODO base case
     
-    // if values is less than midway point, then check the left half
-    if (value < values[n/2]) {
-        int i;
-        for (i = 0; i < n/2; i ++) {
-            if (values[i] === value) {
+    do {
+        if (n == 1) {
+            if (values[0] == value) {
                 return 1;
+            }
+            else {
+                return 0;
+            }
+        }
+        int half = values[n/2];
+        printf("halway point: %d\n", half);
+        printf("you gave value: %d\n", value);
+        
+        // if values is less than midway point, then check the left half
+        if (value < values[n/2]) {
+            int i;
+            for (i = 0; i < n/2; i++) {
+                if (values[i] == value) {
+                    return 1;
+                }
+                else {
+                    n = n/2;
+                }
+            }
+        }
+        // otherwise check the right
+        else {
+            int j;
+            for (j = n/2; j < n; j++) {
+                if (values[j] == value) {
+                    return 1;
+                }
             }
         }
     }
-    // otherwise check the right
-    else {
-        
-    }
+    while (n > 0);
 }
+    
+
 
