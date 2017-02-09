@@ -1,13 +1,16 @@
 #include <stdio.h>
 //#include <cs50.h>
+#include <stdbool.h>
 
 void sort(int values[], int n);
+bool search(int value, int values[], int n);
+
 int main(void) {
     int values[5];
-    values[0] = 5;
-    values[1] = 4;
-    values[2] = 3;
-    values[3] = 2;
+    values[0] = 20;
+    values[1] = 8;
+    values[2] = 2;
+    values[3] = 15;
     values[4] = 1;
     
     printf("values before sorting: \n");
@@ -21,6 +24,8 @@ int main(void) {
     for (y = 0; y < 5; y++) {
         printf("values: %d\n", values[y]);
     }
+    
+    search(3, values, 5);
 }
 
 
@@ -36,7 +41,6 @@ void sort(int values[], int n)
     
     for (i = 0; i < n; i++) {
         //Take ith element and compare it to all the other elements
-        printf("checking value: %d\n", values[i]);
         for (j = place_counter; j < n; j++) {
             if (values[i] > values[j]) {
                 //break out of loop
@@ -59,6 +63,34 @@ void sort(int values[], int n)
             
 
         }
+    }
+}
+
+bool search(int value, int values[], int n)
+{
+    // TODO: implement a searching algorithm
+    // Return false if n is non-positive
+    if (n < 0) {
+        return false;
+    }
+    
+    // Try binary search
+    int half = values[n/2];
+    printf("halway point: %d\n", half);
+    printf("you gave value: %d\n", value);
+    
+    // if values is less than midway point, then check the left half
+    if (value < values[n/2]) {
+        int i;
+        for (i = 0; i < n/2; i ++) {
+            if (values[i] === value) {
+                return 1;
+            }
+        }
+    }
+    // otherwise check the right
+    else {
+        
     }
 }
 
