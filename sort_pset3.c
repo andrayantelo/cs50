@@ -10,7 +10,7 @@ int main(void) {
     values[0] = 39;
     values[1] = 40;
     values[2] = 41;
-    values[3] = 42;
+    values[3] = 43;
     //printf("values before sorting: \n");
     //int y;
     //for (y = 0; y < 5; y++) {
@@ -91,11 +91,11 @@ bool search(int value, int values[], int n)
     // find midpoint
     int midpoint = values[n/2];
     if (value == midpoint) {
-        return 1;
+        return true;
     }
     
-    int i;
-    int j;
+   
+    
     // Check if value is to the left of midpoint
     if (value < midpoint) {
       
@@ -104,24 +104,28 @@ bool search(int value, int values[], int n)
 
         // get left half
        
-        int values_copy[n/2 - 1];
-       
+        //int values_copy[n/2 - 1];
+        int i;
         for (i = 0; i < n/2; i++) {
-            values_copy[i] = values[i];
+            values[i] = values[i];
+            printf("values[%d] : %d\n", i, values[i]);
         };
         
-        return search(value, values_copy, n/2 );
+        return search(value, values, n/2 );
     }
     else if (value > midpoint) {
         // Get the right half.
-        int values_copy[n/2];
-
-        for (j = 0; j <  n/2; j++) {
-            values_copy[j] = values[n/2  + 1 + j];
+        //int values_copy[n - (n/2 + 1)];
+        int j;
+        for (j = 0; j <  n - (n/2 + 1); j++) {
+            values[j] = values[n/2  + 1 + j];
+            printf("values[%d] : %d\n", j, values[j]);
         };
+        
+        
       
         // Search through the right half.
-        return search(value, values_copy, n/2 - 1);
+        return search(value, values, n - (n/2 + 1));
     }
 
     return false;
