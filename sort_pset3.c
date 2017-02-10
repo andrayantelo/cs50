@@ -74,18 +74,8 @@ bool search(int value, int values[], int n)
 {
     // TODO: implement a searching algorithm
     // Return false if n is non-positive
-    if (n < 0) {
+    if (n <= 0) {
         return false;
-    }
-    
-    // Base case. 
-    if (n == 1) {
-        if (value ==  values[0]) {
-            return true;
-        }
-        else {
-            return false;
-        }
     }
     
     // find midpoint
