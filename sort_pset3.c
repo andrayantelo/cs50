@@ -6,26 +6,32 @@ void sort(int values[], int n);
 bool search(int value, int values[], int n);
 
 int main(void) {
-    int values[5];
-    values[0] = 20;
-    values[1] = 8;
-    values[2] = 2;
-    values[3] = 15;
-    values[4] = 1;
+    int values[3];
+    values[0] = 40;
+    values[1] = 41;
+    values[2] = 42;
+
+
     
-    printf("values before sorting: \n");
-    int y;
-    for (y = 0; y < 5; y++) {
-        printf("values: %d\n", values[y]);
+    //printf("values before sorting: \n");
+    //int y;
+    //for (y = 0; y < 5; y++) {
+    //    printf("values: %d\n", values[y]);
+    //}
+    
+    sort(values, 3);
+    //printf("values after sorting: \n");
+    //for (y = 0; y < 5; y++) {
+    //    printf("values: %d\n", values[y]);
+    //}
+    
+    bool found = search(42, values, 3);
+    if (found == true) {
+        printf("Found the value\n");
     }
-    
-    sort(values, 5);
-    printf("values after sorting: \n");
-    for (y = 0; y < 5; y++) {
-        printf("values: %d\n", values[y]);
+    else {
+        printf("Didn't find it: %d\n", found);
     }
-    
-    search(3, values, 5);
 }
 
 
@@ -68,6 +74,11 @@ void sort(int values[], int n)
 
 bool search(int value, int values[], int n)
 {
+    printf("looking through: \n");
+    int x;
+    for (x = 0; x < n; x++) {
+        printf("values[%d] : %d\n", x, values[x]);
+    }
     // TODO: implement a searching algorithm
     // Return false if n is non-positive
     if (n < 0) {
@@ -77,42 +88,60 @@ bool search(int value, int values[], int n)
     // Try binary search
     // TODO base case
     
-    do {
-        if (n == 1) {
-            if (values[0] == value) {
-                return 1;
-            }
-            else {
-                return 0;
-            }
+    if (n == 1) {
+        if (value ==  values[0]) {
+            return true;
         }
-        int half = values[n/2];
-        printf("halway point: %d\n", half);
-        printf("you gave value: %d\n", value);
-        
-        // if values is less than midway point, then check the left half
-        if (value < values[n/2]) {
-            int i;
-            for (i = 0; i < n/2; i++) {
-                if (values[i] == value) {
-                    return 1;
-                }
-                else {
-                    n = n/2;
-                }
-            }
-        }
-        // otherwise check the right
         else {
-            int j;
-            for (j = n/2; j < n; j++) {
-                if (values[j] == value) {
-                    return 1;
-                }
-            }
+            return false;
         }
     }
-    while (n > 0);
+    
+    // find midpoint
+    int midpoint = values[n/2];
+    if (value == midpoint) {
+        return 1;
+    }
+    printf("the midpoint is %d\n", midpoint);
+    int i;
+    int j;
+    // Check if value is to the left of midpoint
+    if (value < midpoint) {
+        printf("value is in the left half\n");
+        // if it is, then throw away right half, get the left half, and
+        // search through it
+
+        // get left half
+       
+        int values_copy[n/2];
+        int counter = 0;
+        for (i = 0; i < n/2; i++) {
+            counter += 1;
+            values_copy[i] = values[i];
+        };
+        printf("counter: %d\n", counter);
+        search(value, values_copy, n/2 );
+    }
+    else if (value > values[n/2]) {
+        printf("value is in the right half\n");
+        //get right half
+        printf("size of values_copy: %d\n", n/2);
+        int values_copy[n/2 -1];
+        int counter = 0;
+        for (j = 0; j <  n/2; j++) {
+            counter += 1;
+            values_copy[j] = values[n/2  + 1 + j];
+        };
+        printf("counter: %d\n", counter);
+        
+        // print out values_copy to see
+        int z;
+        for (z=0;z<n/2;z++) {
+            printf("values_copy[%d]: %d \n", z, values_copy[z]);
+        }
+        search(value, values_copy, n/2 - 1);
+    }
+
 }
     
 
