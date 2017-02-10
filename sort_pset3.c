@@ -78,9 +78,7 @@ bool search(int value, int values[], int n)
         return false;
     }
     
-    // Try binary search
-    // TODO base case
-    
+    // Base case. 
     if (n == 1) {
         if (value ==  values[0]) {
             return true;
