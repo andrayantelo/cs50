@@ -53,27 +53,37 @@ int check_against_values(int values[], int value, int n) {
 
 int find_smaller_between(int values[], int start, int end) {
     // Find smallest element in array.
+    // Maybe return an array of [smallest element, smallest element index]
     
     printf("starting at values[%d]\n", start);
     printf("ending at values[%d]\n", end - 1);
     int i;
     int j;
-    int smallest_element;
+    int smallest_element[2];
     
     // Take ith element and compare it to all the other elements
     for (i = start; i < end; i++) {
         bool smallest = check_against_values(values, values[i], end);
         if (smallest == true) {
             printf("found smallest: %d\n", values[i]);
-            smallest_element = values[i];
+            smallest_element[0] = values[i];
+            smallest_element[1] = i;
             break;
         }
     }
     
     
 };
-int swap(int values[], int i, int j) {
+int swap(int values[], int smallest_element_array[], int current_place_array[]) {
     // Swap the elements i and j in the values array
+    
+    // TODO this doesn't work the way I want it to.
+    // Maybe current_first should be an array of size 2 as well [current_first_value, current_first_index]
+    
+    // Place the smallest_element in the current first place of the array.
+    values[current_place_array[1]] = smallest_element_array[0];
+    values[smallest_element_array[1]] = current_place_array[0];
+    return values;
     
     
 };
@@ -83,14 +93,29 @@ void sort(int values[], int n)
     // TODO: implement an O(n^2) sorting algorithm
     // Let's try selection sort.
    
-    int smallest_element;
+    do {
+    int smallest_element[2];
     int place_counter = 0;
     
     // Find smallest element
     smallest_element = find_smaller_between(values, place_counter, n);
+    //smallest element now an array [element, element_index]
+    
+    int current_place[2];
+    // current place element
+    current_place[0] = values[place_counter];
+    // current place index
+    current_place[1] = place_counter;
     
     //swap smallest with first element (place_counter);
+    swap(values, smallest_element, current_place);
+    // You know you're done when you've gone through the entire list, so when place_counter == n
+    
     // increment place_counter and begin again.
+    place_counter += 1;
+    }
+    while (place_counter < n);
+    
     
     
     
