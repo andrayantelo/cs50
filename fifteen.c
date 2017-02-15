@@ -70,7 +70,6 @@ int main(int argc, string argv[])
     // initialize the board
     init();
     
-   
     // accept moves until game is won
     while (true)
     {
@@ -79,7 +78,9 @@ int main(int argc, string argv[])
 
         // draw the current state of the board
         draw();
-
+        
+        
+        
         // log the current state of the board (for testing)
         for (int i = 0; i < d; i++)
         {
@@ -126,6 +127,8 @@ int main(int argc, string argv[])
         // sleep thread for animation's sake
         usleep(500000);
     }
+    
+    
     
     // close log
     fclose(file);
@@ -211,16 +214,7 @@ void draw(void)
         // Iterate over columns
         for(j = 0; j < d; j++) {
             if (board[i][j] == blank_tile) {
-                if (j == 0) {
-                    printf("_ ");
-                }
-                else if (j == 3) {
                     printf(" _");
-                }
-                else {
-                        printf(" _");
-                }
-                
             }
             else if (board[i][j] < 10) {
                 printf("%2d", board[i][j]);
@@ -269,9 +263,14 @@ bool move(int tile)
             }
         }
     }
+    
+    int right_edge = d - 1;
+    int left_edge = 0;
+    int top_edge = 0;
+    int bottom_edge = d - 1;
     // Check if move is legal
     // if the blank is at the left top corner
-    if (blank_col == 0 && blank_row == 0) {
+    if (blank_col == left_edge && blank_row == top_edge) {
         // check if tile is to the right or below
         if ((tile_row == 0 && tile_col == 1) || (tile_row == 1 && tile_col == 0)) {
             // Move is legal
@@ -281,9 +280,9 @@ bool move(int tile)
         }
     }
     // if tile is bottom left corner
-    else if (blank_row == 3 && blank_col == 0) {
+    else if (blank_row == bottom_edge && blank_col == left_edge) {
         // Check if tile is to the right or above
-        if ((tile_row == 3 && tile_col == 1) || (tile_row == 2 && tile_col == 0)) {
+        if ((tile_row == bottom_edge && tile_col == 1) || (tile_row == bottom_edge - 1 && tile_col == 0)) {
             // move is legal
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
@@ -292,9 +291,9 @@ bool move(int tile)
     }
     
     // If tile is at the bottom right corner
-    else if (blank_row == 3 && blank_col == 3) {
+    else if (blank_row == bottom_edge && blank_col == right_edge) {
         // Check if tile is to the left or above
-        if ((tile_row == 3 && tile_col == 2) || (tile_row == 2 && tile_col == 3)) {
+        if ((tile_row == bottom_edge && tile_col == right_edge - 1) || (tile_row == bottom_edge - 1 && tile_col == right_edge)) {
             // Legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
@@ -302,9 +301,9 @@ bool move(int tile)
         }
     }
     // If tile is at the top right corner
-    else if (blank_row == 0 && blank_col == 3) {
+    else if (blank_row == 0 && blank_col == right_edge) {
         // Check if tile is to the left or below
-        if ((tile_row == 0 && tile_col == 2) || (tile_row == 1 && tile_col == 3)) {
+        if ((tile_row == 0 && tile_col == right_edge - 1) || (tile_row == 1 && tile_col == right_edge)) {
             // Legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
@@ -328,16 +327,16 @@ bool move(int tile)
         }
     }
     // If tile is bottom row
-    else if (blank_row == 3) {
+    else if (blank_row == bottom_edge) {
         // check if it is to the left or right
-        if (tile_row == 3 && (tile_col == blank_row - 1 || tile_col == blank_row + 1)) {
+        if (tile_row == bottom_edge && (tile_col == blank_col - 1 || tile_col == blank_col + 1)) {
             // legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
             return true;
         }
         // check if above
-        else if (tile_row == 2 && tile_col == blank_col) {
+        else if (tile_row == bottom_edge - 1 && tile_col == blank_col) {
             // legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
@@ -345,7 +344,7 @@ bool move(int tile)
         }
     }
     // if the blank tile is at left edge ( but not a corner)
-    else if (blank_col == 0) {
+    else if (blank_col == left_edge) {
         // check if it is to the right 
         if (tile_col == 1 && tile_row == blank_row) {
             // legal move
@@ -362,23 +361,23 @@ bool move(int tile)
         }
     }
     // if the blank tile is at the right edge
-    else if (blank_col == 3) {
+    else if (blank_col == right_edge) {
         // check if tile is to the left
-        if (tile_col == 2 && tile_row == blank_row) {
+        if (tile_col == (right_edge - 1) && tile_row == blank_row) {
             // legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
             return true;
         }
         // check if above or below
-        else if (tile_col == 3 && (tile_row == blank_row - 1 || tile_row == blank_row + 1)) {
+        else if (tile_col == right_edge && (tile_row == blank_row - 1 || tile_row == blank_row + 1)) {
             // legal move
             board[blank_row][blank_col] = tile;
             board[tile_row][tile_col] = blank_tile;
             return true;
         }
     }
-    // Last case, the tile is in one of the four middle spots
+    // Last case, the tile is in one of the middle spots
     // need to check if the tile is above, below, to the right or left of the blank tile.
     else {
         // check if the tile is above or below
@@ -411,19 +410,30 @@ bool won(void)
 {
     // TODO
     
-    // Iterate over the whole board and check that it is in descending order
+    // Iterate over the whole board and check that it is in ascending order
     
     int i;
     int j;
     
     // Iterate over rows
+    int current_tile = 0;
     for (i = 0; i < d; i++) {
         // Iterate over columns
         for (j = 0; j < d; j++) {
             // Check here. 
-            // Have to check if you are at right edge and need to go to
-            // next row before comparing
+            if (i == d - 1 && j == d - 1) {
+                printf("last tile\n");
+                break;
+            }
+            if (board[i][j] < current_tile) {
+                printf("failed at: board[%d][%d] = %d\n", i, j, board[i][j]);
+                printf("It's not in ascending order\n");
+                return false;
+            }
+            current_tile = board[i][j];
         }
+        
     }
-    return false;
+    printf("We have left the loop\n");
+    return true;
 }
