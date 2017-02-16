@@ -18,73 +18,38 @@ int main(void) {
     //    printf("values: %d\n", values[y]);
     //}
     
-    sort(values, 4);
+    //sort(values, 4);
     //printf("values after sorting: \n");
     //for (y = 0; y < 5; y++) {
     //    printf("values: %d\n", values[y]);
     //}
     
-    bool found = search(42, values, 4);
-    if (found == true) {
-        printf("Found the value\n");
-    }
-    else {
-        printf("Didn't find it: %d\n", found);
-    }
+    //bool found = search(42, values, 4);
+    //if (found == true) {
+    //    printf("Found the value\n");
+    //}
+    //else {
+    //    printf("Didn't find it: %d\n", found);
+    //}
     
     printf("Finding smallest element in [5,8,10,2,20]\n");
     int vals[] = {5,8,10,2,20};
     int smallest = find_smaller_between(vals, 0, 5);
-    printf("smallest element: %d\n", smallest);
+    printf("smallest element: %d\n", vals[smallest]);
+    
+    printf("Now going to try to sort them: \n");
+    sort(vals, 5);
 }
 
-int check_against_values(int values[], int value, int n) {
-    // check a value against the other values in the array
-    int i;
-    
-    for (i = 0; i < n; i++) {
-        printf("checking value: %d against values[%d] = %d\n", value, i, values[i]);
-        if (value > values[i]) {
-            return false;
-        }
-    }
-    return true;
-};
 
-int find_smaller_between(int values[], int start, int end) {
-    // Find smallest element in array.
-    // Maybe return an array of [smallest element, smallest element index]
-    
-    printf("starting at values[%d]\n", start);
-    printf("ending at values[%d]\n", end - 1);
-    int i;
-    int j;
-    int smallest_element[2];
-    
-    // Take ith element and compare it to all the other elements
-    for (i = start; i < end; i++) {
-        bool smallest = check_against_values(values, values[i], end);
-        if (smallest == true) {
-            printf("found smallest: %d\n", values[i]);
-            smallest_element[0] = values[i];
-            smallest_element[1] = i;
-            break;
-        }
-    }
-    
-    
-};
-int swap(int values[], int smallest_element_array[], int current_place_array[]) {
+void swap(int values[], int smallest_element_index, int current_place_index) {
     // Swap the elements i and j in the values array
     
-    // TODO this doesn't work the way I want it to.
-    // Maybe current_first should be an array of size 2 as well [current_first_value, current_first_index]
-    
-    // Place the smallest_element in the current first place of the array.
-    values[current_place_array[1]] = smallest_element_array[0];
-    values[smallest_element_array[1]] = current_place_array[0];
-    return values;
-    
+    printf("Swapping\n");
+    int smallest_element = values[smallest_element_index];
+    values[smallest_element_index] = values[current_place_index];
+    values[current_place_index] = smallest_element;
+    return;
     
 };
 
@@ -92,24 +57,29 @@ void sort(int values[], int n)
 {
     // TODO: implement an O(n^2) sorting algorithm
     // Let's try selection sort.
-   
-    do {
-    int smallest_element[2];
     int place_counter = 0;
+    int smallest_element; 
     
+    do {
     // Find smallest element
     smallest_element = find_smaller_between(values, place_counter, n);
     //smallest element now an array [element, element_index]
     
-    int current_place[2];
+    int current_place;
     // current place element
-    current_place[0] = values[place_counter];
+    //current_place[0] = values[place_counter];
     // current place index
-    current_place[1] = place_counter;
+    current_place = place_counter;
     
     //swap smallest with first element (place_counter);
     swap(values, smallest_element, current_place);
     // You know you're done when you've gone through the entire list, so when place_counter == n
+    
+    printf("this is what values looks like now: \n");
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("values[%d] = %d\n", i, values[i]);
+    };
     
     // increment place_counter and begin again.
     place_counter += 1;
@@ -126,7 +96,7 @@ void sort(int values[], int n)
         for (j = place_counter; j < n; j++) {
             if (values[i] > values[j]) {
                 // Break out of loop, not the smallest element
-                j = n;
+                break;
             }
             
         }
