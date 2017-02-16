@@ -179,10 +179,12 @@ void init(void)
         // Iterate over columns
         for (j = 0; j < d; j++) {
             if (start_number == 2) {
+                // Storing the index of the integer 2
                 two_location[0] = i;
                 two_location[1] = j;
             }
             else if (start_number == 1) {
+                // Storing the index of integer 1
                 one_location[0] = i;
                 one_location[1] = j;
             }
@@ -238,8 +240,8 @@ void draw(void)
  */
 bool move(int tile)
 {
-    // TODO
-    // Find the tile location.
+    // Find the indices of the tile you are moving and of
+    // the blank tile.
     
     int tile_row;
     int tile_col;
@@ -264,10 +266,15 @@ bool move(int tile)
         }
     }
     
+    // Rightmost column
     int right_edge = d - 1;
+    // Leftmost column
     int left_edge = 0;
+    // Top most row
     int top_edge = 0;
+    // Bottom most row
     int bottom_edge = d - 1;
+    
     // Check if move is legal
     // if the blank is at the left top corner
     if (blank_col == left_edge && blank_row == top_edge) {
@@ -408,7 +415,6 @@ bool move(int tile)
  */
 bool won(void)
 {
-    // TODO
     
     // Iterate over the whole board and check that it is in ascending order
     
@@ -416,21 +422,27 @@ bool won(void)
     int j;
     
     // Iterate over rows
-    int current_tile = 0;
+    int last_tile = 0;
     for (i = 0; i < d; i++) {
         // Iterate over columns
         for (j = 0; j < d; j++) {
             // Check here. 
             if (i == d - 1 && j == d - 1) {
+                // Break out of the loop once you are at the last tile which is just
+                // the "_" tile. You only get to this point if all the previous
+                // tiles were in ascending order.
                 printf("last tile\n");
                 break;
             }
-            if (board[i][j] < current_tile) {
+            // If the current tile is less than the last tile you were looking at
+            // then you are not going in ascending order.
+            if (board[i][j] < last_tile) {
                 printf("failed at: board[%d][%d] = %d\n", i, j, board[i][j]);
                 printf("It's not in ascending order\n");
                 return false;
             }
-            current_tile = board[i][j];
+            // Update the last looked at tile
+            last_tile = board[i][j];
         }
         
     }
