@@ -8,145 +8,71 @@ int find_smaller_between(int values[], int start, int end);
 
 int main(void) {
     int values[4];
-    values[0] = 39;
-    values[1] = 40;
-    values[2] = 41;
-    values[3] = 43;
-    //printf("values before sorting: \n");
-    //int y;
-    //for (y = 0; y < 5; y++) {
-    //    printf("values: %d\n", values[y]);
-    //}
-    
+    values[0] = 43;
+    values[1] = 41;
+    values[2] = 40;
+    values[3] = 39;
+ 
+    printf("Now going to try to sort them: \n");
     sort(values, 4);
-    //printf("values after sorting: \n");
-    //for (y = 0; y < 5; y++) {
-    //    printf("values: %d\n", values[y]);
-    //}
     
-    bool found = search(42, values, 4);
-    if (found == true) {
-        printf("Found the value\n");
-    }
-    else {
-        printf("Didn't find it: %d\n", found);
-    }
-    
-    printf("Finding smallest element in [5,8,10,2,20]\n");
-    int vals[] = {5,8,10,2,20};
-    int smallest = find_smaller_between(vals, 0, 5);
-    printf("smallest element: %d\n", smallest);
+     printf("values right now:\n");
+    int i;
+    for(i = 0; i < 4; i++) {
+        printf("values[%d] = %d\n", i, values[i]);
+    };
 }
 
-int check_against_values(int values[], int value, int n) {
-    // check a value against the other values in the array
-    int i;
+
+void swap(int values[], int smallest_element_index, int current_place_index) {
+    // Swap the elements i and j in the values array
+   
+    int smallest_element = values[smallest_element_index];
+    values[smallest_element_index] = values[current_place_index];
+    values[current_place_index] = smallest_element;
+    return;
     
-    for (i = 0; i < n; i++) {
-        printf("checking value: %d against values[%d] = %d\n", value, i, values[i]);
-        if (value > values[i]) {
-            return false;
-        }
-    }
-    return true;
 };
 
 int find_smaller_between(int values[], int start, int end) {
-    // Find smallest element in array.
-    // Maybe return an array of [smallest element, smallest element index]
+    // Returns the index of the smallest integer between the values in the array values
+    // beginning from the index start and ending at index end.
     
-    printf("starting at values[%d]\n", start);
-    printf("ending at values[%d]\n", end - 1);
     int i;
     int j;
-    int smallest_element[2];
-    
-    // Take ith element and compare it to all the other elements
     for (i = start; i < end; i++) {
-        bool smallest = check_against_values(values, values[i], end);
-        if (smallest == true) {
-            printf("found smallest: %d\n", values[i]);
-            smallest_element[0] = values[i];
-            smallest_element[1] = i;
-            break;
+        
+        for (j = start; j < end; j++) {
+            if (values[i] > values[j]) {
+                // Break out of loop, not the smallest element
+                break;
+            }
+            
+        }
+        // if you reached the last value
+        if (j == end) {
+            return i;
         }
     }
-    
-    
-};
-int swap(int values[], int smallest_element_array[], int current_place_array[]) {
-    // Swap the elements i and j in the values array
-    
-    // TODO this doesn't work the way I want it to.
-    // Maybe current_first should be an array of size 2 as well [current_first_value, current_first_index]
-    
-    // Place the smallest_element in the current first place of the array.
-    values[current_place_array[1]] = smallest_element_array[0];
-    values[smallest_element_array[1]] = current_place_array[0];
-    return values;
-    
-    
 };
 
 void sort(int values[], int n)
 {
-    // TODO: implement an O(n^2) sorting algorithm
+    // Implement an O(n^2) sorting algorithm
     // Let's try selection sort.
-   
-    do {
-    int smallest_element[2];
     int place_counter = 0;
+    int smallest_element_index; 
     
-    // Find smallest element
-    smallest_element = find_smaller_between(values, place_counter, n);
-    //smallest element now an array [element, element_index]
-    
-    int current_place[2];
-    // current place element
-    current_place[0] = values[place_counter];
-    // current place index
-    current_place[1] = place_counter;
-    
-    //swap smallest with first element (place_counter);
-    swap(values, smallest_element, current_place);
-    // You know you're done when you've gone through the entire list, so when place_counter == n
-    
-    // increment place_counter and begin again.
-    place_counter += 1;
-    }
-    while (place_counter < n);
-    
-    
-    
-    
-/*    // Take ith element and compare it to all the other elements
-    for (i = 0; i < n; i++) {
+    do{
+        // Find smallest element
+        smallest_element_index = find_smaller_between(values, place_counter, n);
         
-        // Starting at the beginning of the array, which place_counter represents.
-        for (j = place_counter; j < n; j++) {
-            if (values[i] > values[j]) {
-                // Break out of loop, not the smallest element
-                j = n;
-            }
-            
-        }
-        if (j == n) {
-            // Swap places between the smallest element and the element currently in the first position
-            int smallest_element = values[i];
-            int swap_element = values[place_counter];
-
-            values[i] = swap_element;
-            values[place_counter] = smallest_element;
-            
-            // have to move to the next value in values.. the value after the recently sorted smallest element.
-            i = place_counter;
-            
-            place_counter += 1;
-            
-
-        }
+        swap(values, smallest_element_index, place_counter);
+        
+        place_counter += 1;
     }
-*/
+    while(place_counter < n);
+    
 }
 
 bool search(int value, int values[], int n)
