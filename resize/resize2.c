@@ -90,21 +90,30 @@ int main(int argc, char *argv[])
     
 
     size_t sizeOfTriple = sizeof(RGBTRIPLE);
+    
     // each pixel is 3 bytes, scanlineWidth is in bytes. (36 bytes -> 12 pixels);
+    // OG scanlineWidth
     int scanlineWidth = og_biWidth*sizeOfTriple + og_padding;
     
     // TEMPORARY storage unit
-    int memorySize = sizeof(RGBTRIPLE)*factor; //in bytes, if factor = 2, then memorySize = 6 bytes
-                                               // R-1 byte, G-1 byte, B-1 Byte (space for TWO pixels)
+    int memorySize = sizeof(scanlineWidth); 
     
+    // pointer to an rgbtriple
     RGBTRIPLE* temp = malloc(memorySize);
+    
+    // Temporary storage unit of size of new image's row
+    int newImageRowWidth = bi.biWidth*sizeOfTriple + padding;
+    
+    int newImageMemorySize = sizeof(newImageRowWidth);
+    RGB // TODO
     
     int i;
     int r;
-    int p;
+    int p = 0;
     int j;
     int k;
-    int biHeight = abs(og_biHeight); // TODO is this the right height?
+    int m;
+    int biHeight = abs(og_biHeight); 
     
     // iterate over scanlines (rows)
     for (i = 0; i < biHeight; i++)
@@ -115,23 +124,20 @@ int main(int argc, char *argv[])
             // iterate over pixels in scanline
             for (j = 0; j < og_biWidth; j++)
             {   
-                
+            // read from inptr and store the row in temp
+            
                     // temporary storage
                     RGBTRIPLE triple;
         
                     // read RGB triple from infile
                     fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
                     
-                    // repeat pixel factor times
-                    for (p = 0; p < factor; p++) {
-                        temp[p] = triple;
-                    }
-                    
-                    // write RGB triple to outfile 
-                    fwrite(temp, sizeof(RGBTRIPLE), factor, outptr);
-                
+                    // store pixel in temp 
+                    temp[p] = triple;
+                    // increment p
+                    p++;
             }
-            
+        
             // skip over padding, if any
             fseek(inptr, og_padding, SEEK_CUR);
     
@@ -140,6 +146,16 @@ int main(int argc, char *argv[])
             {
                 fputc(0x00, outptr);
             }
+            
+            
+            // BEFORE GOING ON TO NEXT ROW, write row of new image
+            for (m = 0; m < bi.biWidth; m ++) {
+                // TODO determine what you are going to write
+                fwrite(, sizeof(RGBTRIPLE), 1, outptr);
+            }
+            
+            
+            
             // done with one row
             // go back to beginning of row
             fseek(inptr, -scanlineWidth, SEEK_CUR);
