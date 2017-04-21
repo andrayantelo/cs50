@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
     
-
+    // I use this later when calculating row widths
     size_t sizeOfTriple = sizeof(RGBTRIPLE);
     
     // each pixel is 3 bytes, scanlineWidth is in bytes. (36 bytes -> 12 pixels);
