@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     //sscanf(argv[1], "%f", &factor);
     //factor = atoi(argv[1]);
     factor = atof(argv[1]);
-    printf("factor : %f\n", factor);
     
     // factor must be between (0.0, 100.0]
     if (factor <= 0 || factor > 100) {
@@ -78,8 +77,8 @@ int main(int argc, char *argv[])
     
     // Update outfile's header info
     // float gets truncated
-    bi.biWidth = bi.biWidth *= factor;
-    bi.biHeight = bi.biHeight *= factor;
+    bi.biWidth *= factor;
+    bi.biHeight *= factor;
     
     printf("new biWidth: %d pixels\n", bi.biWidth);
     printf("new biHeight: %d pixels\n", bi.biHeight);
@@ -91,8 +90,10 @@ int main(int argc, char *argv[])
     printf("old image padding: %d bytes\n", og_padding);
     printf("new image padding: %d bytes\n", padding);
     
-    printf("size of old image: %d bytes\n", bi.biSizeImage);
-    
+    // store old image size
+    int og_biSizeImage = bi.biSizeImage;
+    printf("size of old image: %d bytes\n",og_biSizeImage);
+
     bi.biSizeImage = ((sizeof(RGBTRIPLE)*bi.biWidth) + padding) * abs(bi.biHeight);
     bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
     
@@ -106,105 +107,52 @@ int main(int argc, char *argv[])
     
 
     size_t sizeOfTriple = sizeof(RGBTRIPLE);
-    printf("size of triple: %zu\n", sizeOfTriple);
-    
-    
-    size_t sizeOfByte = sizeof(BYTE);
-    printf("size of BYTE: %zu\n", sizeOfByte);
     
     // each pixel is 3 bytes, scanlineWidth is in bytes. (36 bytes -> 12 pixels);
     // OG scanlineWidth
     int oldRowWidth = og_biWidth*sizeOfTriple + og_padding;
     
-    printf("size of malloc oldRow : %d in bytes\n", oldRowWidth);
-    
     // allocate memory to temporarily store row of old image
-    BYTE* oldRow = malloc(oldRowWidth);
+    BYTE* old = calloc(og_biSizeImage, 1);
     
-    // Temporary storage unit of size of new image's row
+    // new image's row width including padding in BYTES
     int newRowWidth = bi.biWidth*sizeOfTriple + padding; // in bytes
-    
-    printf("size of malloc newRow: %d in bytes\n", newRowWidth);
-    
-    //allocate memory to temporarily store row of new image
-    BYTE* newRow = malloc(newRowWidth);
-    
-    printf("Old row width: %d bytes\n", oldRowWidth);
-    printf("new row width: %d bytes\n", newRowWidth);
+
+    //allocate memory to temporarily store new image
+    BYTE* new = calloc(bi.biSizeImage, 1);
+
+    // read image from infile and temporarily store its bytes in old
+    fread(old, 1, og_biSizeImage, inptr);
     
     int i;
-    int r;
-
     int j;
-    int k;
+   
+    int biHeight = abs(bi.biHeight); //#number of rows
     
-    int m;
-
-    int biHeight = abs(og_biHeight); //pixels
-    
-    
-    // TODO figure out how to know how many times to repeat a row
-    // iterate over OG scanlines (rows)
-    for (i = 0; i < biHeight; i++)
-    {
-        // repeat row factor times
-        for (r = 0; r < factor; r++) {
-            
-            // iterate over OG pixels in scanline (row)
-            for (j = 0; j < og_biWidth; j++)
-            {   
-            // read from inptr and store the row in oldRow - temporary storage
-            
-                    // temporary storage
-                    RGBTRIPLE triple;
+    // iterate over new scanlines (rows)
+    for (i = 0; i < biHeight; i++) {
         
-                    // read RGB triple from infile
-                    fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-                    
-                    // store pixel in oldRow
-                    //oldRow[j] = triple;
-            }
-
-            // skip over padding, if any
-            // this takes you to the beginning of the next row
-            fseek(inptr, og_padding, SEEK_CUR);
-            
-            // after the preceding for loop, you have the original row stored
-            // in 'oldRow'. Now you want to build the new row from the old one and write it into
-            // the outfile
-            
-            //TODO BUILD ROW HERE
-            for (m = 0; m < bi.biWidth; m++) {
-                newRow[m] = oldRow[(int) floor(m/factor)];
-            }
-            
-            // Now you have built the new row and stored it in 'newRow' temporarily.
-            // You need to now write it into the outfile.
-            
-            fwrite(newRow, sizeof(newRowWidth), 1, outptr);
-            
-            // add new padding of new row to outfile
-            for (k = 0; k < padding; k++)
-            {
-                fputc(0x00, outptr);
-            }
-            
-            // Now you have written one new row into the outfile including its padding
-            // We have to determine if we need to repeat this row, how many times
-            // do we need to repeat it?
-
-            fseek(inptr, -oldRowWidth, SEEK_CUR);
-            
-        } // end of repeat row for loop
-        
-        // Move on to next row
-        fseek(inptr, oldRowWidth, SEEK_CUR);
-
-    }// end of row
+        // determine the row from old to be copied
+        RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + (int) floor(i/factor));
     
+        //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
+        RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
+        
+            // iterate over new image pixels in scanline (row)
+            for (j = 0; j < bi.biWidth; j++) {   
+                new_pixel[j] = old_pixel[(int) floor(j/factor)];
+                //printf("%4i %4i\n", i, j);
+         
+            }
+
+            
+    }// end of repeat row for loop
+    
+    fwrite(new, 1, bi.biSizeImage, outptr);
+
     // free mallocs
-    free(oldRow);
-    free(newRow);
+    free(old);
+    free(new);
     
     // close infile
     fclose(inptr);
