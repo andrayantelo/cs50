@@ -1,7 +1,8 @@
 /**
  * Copies a BMP piece by piece, just because.
  */
-       
+    
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -121,24 +122,23 @@ int main(int argc, char *argv[])
    
     int biHeight = abs(bi.biHeight); //#number of rows
     
-    // iterate over new scanlines (rows)
+    // iterate over new image's scanlines (rows)
     for (i = 0; i < biHeight; i++) {
         // TODO assert i/factor is less than old image's row count
-        //assert((i/factor) < og_biHeight);
+        assert((i/factor) < abs(og_biHeight));
         
             // determine the starting point of the row from old to be copied
             RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + ((int) (i/factor)));
-            //printf("address of beginning of old row: %
         
             //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
             RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
-            printf("value at address of beginning of row: %d\n", *new_pixel);
-            
+                printf("On old row: %d\n", (int) (i/factor));
+                printf("on new row: %d\n", i);
                 // iterate over new image pixels in scanline (row)
-                for (j = 0; j < bi.biWidth; j++) {   
+                for (j = 0; j < bi.biWidth; j++) {  
                     // assert j/factor is less than og_biWidth
-                    //assert((j/factor) < og_biWidth);
-                
+                    assert((j/factor) < og_biWidth);
+                    printf("new_pixel[%d] = old_pixel[%d]\n", j, (int) (j/factor));
                     new_pixel[j] = old_pixel[(int) (j/factor)];
                     //printf("%4i %4i\n", i, j);
 

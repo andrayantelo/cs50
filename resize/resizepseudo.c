@@ -4,6 +4,9 @@
 BYTE* old = calloc(og_biSizeImage, 1);
 BYTE* new = calloc(bi.biSizeImage, 1);
 
+// calculate new image's row width including padding in BYTES <-- TODO need this in pixels
+int newRowWidth = bi.biWidth*sizeof(RGBTRIPLE) + padding;
+    
 // read the old image from infile and
 // store it in the 'old' pointer
 fread(old, 1, og_biSizeImage, inptr);
@@ -17,14 +20,14 @@ for (int i = 0; i < biHeight; i++) {
     
     // make pointer of type RGBTRIPLE and point to same address as 'old'
     // make pointer of type RGBTRIPLE and point to same address as 'new'
-    // this allows you to move sizeof(RGBTRIPLE) through the array (when using new_pixel
+    // this allows you to move sizeof(RGBTRIPLE) (pixel by pixel) through the array (when using new_pixel
     // or old_pixel (done inside for loop)
     
     // determine the row from old to be copied and assert it is not larger than 
     // the old image's height
-    assert !i/factor >= og_biHeight
+    assert (i/factor) <  og_biHeight
     
-    RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + (int) floor(i/factor));
+    RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + ((int) (i/factor)));
     
     //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
     RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
@@ -35,7 +38,7 @@ for (int i = 0; i < biHeight; i++) {
         
         // determine the pixel from 'old' to be copied and assert that its
         // index is not larger than og_biWidth
-        assert !j/factor >= og_biWidth;
+        assert j/factor < og_biWidth;
         
         new_pixel[j] = old_pixel[(int) floor(j/factor)];
     }
