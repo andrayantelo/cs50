@@ -18,8 +18,6 @@ int main(int argc, char *argv[])
     }
     
     float factor;
-    //sscanf(argv[1], "%f", &factor);
-    //factor = atoi(argv[1]);
     factor = atof(argv[1]);
     
     // factor must be between (0.0, 100.0]
@@ -90,10 +88,11 @@ int main(int argc, char *argv[])
     printf("old image padding: %d bytes\n", og_padding);
     printf("new image padding: %d bytes\n", padding);
     
-    // store old image size
+    // remember old image size
     int og_biSizeImage = bi.biSizeImage;
     printf("size of old image: %d bytes\n",og_biSizeImage);
-
+    
+    // update outfile's image size
     bi.biSizeImage = ((sizeof(RGBTRIPLE)*bi.biWidth) + padding) * abs(bi.biHeight);
     bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
     
@@ -105,18 +104,14 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
     
-    // each pixel is 3 bytes, scanlineWidth is in bytes. (36 bytes -> 12 pixels);
-    // OG scanlineWidth
-    int oldRowWidth = og_biWidth*sizeof(RGBTRIPLE) + og_padding;
-    
     // allocate memory to temporarily store old image
     BYTE* old = calloc(og_biSizeImage, 1);
     
-    // new image's row width including padding in BYTES
-    int newRowWidth = bi.biWidth*sizeof(RGBTRIPLE) + padding; // in bytes
-
     //allocate memory to temporarily store new image
     BYTE* new = calloc(bi.biSizeImage, 1);
+    
+    // calculate new image's row width including padding in BYTES <-- TODO need this in pixels
+    int newRowWidth = bi.biWidth*sizeof(RGBTRIPLE) + padding;
 
     // read image from infile and store its bytes in old
     fread(old, 1, og_biSizeImage, inptr);
@@ -128,12 +123,13 @@ int main(int argc, char *argv[])
     
     // iterate over new scanlines (rows)
     for (i = 0; i < biHeight; i++) {
+        // TODO assert i/factor is no larger than old image's row count
         
-        // determine the row from old to be copied
-        RGBTRIPLE* old_pixel =  old + (int) i/factor;
+        // determine the starting point of the row from old to be copied
+        RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + (int) (i/factor));
     
         //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
-        RGBTRIPLE* new_pixel = new + i*newRowWidth;
+        RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
         
             // iterate over new image pixels in scanline (row)
             for (j = 0; j < bi.biWidth; j++) {   
@@ -141,7 +137,7 @@ int main(int argc, char *argv[])
                 if (j/factor >= og_biWidth) {
                     break;
                 }
-                new_pixel[j] = old_pixel[(int) j/factor];
+                new_pixel[j] = old_pixel[(int) (j/factor)];
                 //printf("%4i %4i\n", i, j);
          
             }

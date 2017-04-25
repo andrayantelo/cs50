@@ -1,8 +1,8 @@
-// allocate memory to temporarily store old image BYTES and do the same
-// for new image
+// allocate enough memory in BYTES for old image and set the allocated memory to zero
+// allocate enough memory in BYTES for new image and set the allocated memory to zero
 
-BYTE* old = calloc(size of old img in bytes);
-BYTE* new = calloc(size of new img in bytes);
+BYTE* old = calloc(og_biSizeImage, 1);
+BYTE* new = calloc(bi.biSizeImage, 1);
 
 // make pointer of type RGBTRIPLE and point to same address as old and make one
 // for new also, so that you can move sizeof(RGBTRIPLE) through the array (done inside for loop)
