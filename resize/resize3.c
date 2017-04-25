@@ -105,23 +105,20 @@ int main(int argc, char *argv[])
     // write outfile's BITMAPINFOHEADER
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
     
-    // I use this later when calculating row widths
-    size_t sizeOfTriple = sizeof(RGBTRIPLE);
-    
     // each pixel is 3 bytes, scanlineWidth is in bytes. (36 bytes -> 12 pixels);
     // OG scanlineWidth
-    int oldRowWidth = og_biWidth*sizeOfTriple + og_padding;
+    int oldRowWidth = og_biWidth*sizeof(RGBTRIPLE) + og_padding;
     
-    // allocate memory to temporarily store row of old image
+    // allocate memory to temporarily store old image
     BYTE* old = calloc(og_biSizeImage, 1);
     
     // new image's row width including padding in BYTES
-    int newRowWidth = bi.biWidth*sizeOfTriple + padding; // in bytes
+    int newRowWidth = bi.biWidth*sizeof(RGBTRIPLE) + padding; // in bytes
 
     //allocate memory to temporarily store new image
     BYTE* new = calloc(bi.biSizeImage, 1);
 
-    // read image from infile and temporarily store its bytes in old
+    // read image from infile and store its bytes in old
     fread(old, 1, og_biSizeImage, inptr);
     
     int i;
@@ -133,14 +130,18 @@ int main(int argc, char *argv[])
     for (i = 0; i < biHeight; i++) {
         
         // determine the row from old to be copied
-        RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + (int) floor(i/factor));
+        RGBTRIPLE* old_pixel =  old + (int) i/factor;
     
         //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
-        RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
+        RGBTRIPLE* new_pixel = new + i*newRowWidth;
         
             // iterate over new image pixels in scanline (row)
             for (j = 0; j < bi.biWidth; j++) {   
-                new_pixel[j] = old_pixel[(int) floor(j/factor)];
+                // assert j/factor is no larger than og_biWidth
+                if (j/factor >= og_biWidth) {
+                    break;
+                }
+                new_pixel[j] = old_pixel[(int) j/factor];
                 //printf("%4i %4i\n", i, j);
          
             }
