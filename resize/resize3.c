@@ -71,33 +71,21 @@ int main(int argc, char *argv[])
     LONG og_biWidth = bi.biWidth;
     LONG og_biHeight = bi.biHeight;
     
-    printf("original bi_width: %d pixels\n", og_biWidth);
-    printf("original bi_height: %d pixels\n", og_biHeight);
-    
     // Update outfile's header info
     // float gets truncated
     bi.biWidth *= factor;
     bi.biHeight *= factor;
-    
-    printf("new biWidth: %d pixels\n", bi.biWidth);
-    printf("new biHeight: %d pixels\n", bi.biHeight);
 
     // determine padding for scanlines
     int og_padding = (4 - (og_biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
     int padding =  (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-    
-    printf("old image padding: %d bytes\n", og_padding);
-    printf("new image padding: %d bytes\n", padding);
-    
+
     // remember old image size
     int og_biSizeImage = bi.biSizeImage;
-    printf("size of old image: %d bytes\n",og_biSizeImage);
     
     // update outfile's image size
     bi.biSizeImage = ((sizeof(RGBTRIPLE)*bi.biWidth) + padding) * abs(bi.biHeight);
     bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-    
-    printf("Size of new image: %d bytes\n", bi.biSizeImage);
     
     // write outfile's BITMAPFILEHEADER
     fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
@@ -134,26 +122,20 @@ int main(int argc, char *argv[])
         
             //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
             RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
-                printf("On old row: %d\n", (int) (i/factor));
-                printf("on new row: %d\n", i);
+
                 // iterate over new image pixels in scanline (row)
                 for (j = 0; j < bi.biWidth; j++) {  
                     // assert j/factor is less than og_biWidth
                     assert((j/factor) < og_biWidth);
-                    printf("new_pixel[%d] = old_pixel[%d]\n", j, (int) (j/factor));
+                    
                     new_pixel[j] = old_pixel[(int) (j/factor)];
-                    //printf("%4i %4i\n", i, j);
+                    
 
                 }// end of inner for loop
         
     }// end of outer for loop
     
-    size_t result = fwrite(new, 1, bi.biSizeImage, outptr);
-    
-    printf("size_t = %zu\n", result);
-    if (ferror(outptr)) {
-        printf("Error in outfile.\n");
-    }
+    fwrite(new, 1, bi.biSizeImage, outptr);
 
     // free mallocs
     free(old);
