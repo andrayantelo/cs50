@@ -111,9 +111,11 @@ int main(int argc, char *argv[])
     //allocate memory to temporarily store new image
     BYTE* new = calloc(bi.biSizeImage, 1);
     
-    // calculate new image's row width including padding in BYTES <-- TODO need this in pixels
+    // calculate new image's row width including padding in BYTES 
     int newRowWidth = bi.biWidth*sizeof(RGBTRIPLE) + padding;
-
+    // old image's row width including padding in BYTES
+    int oldRowWidth = og_biWidth*sizeof(RGBTRIPLE) + og_padding;
+    
     // read image from infile and store its bytes in old
     fread(old, 1, og_biSizeImage, inptr);
     
@@ -128,7 +130,7 @@ int main(int argc, char *argv[])
         assert((i/factor) < abs(og_biHeight));
         
             // determine the starting point of the row from old to be copied
-            RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + ((int) (i/factor)));
+            RGBTRIPLE* old_pixel =  (RGBTRIPLE*) (old + ((int) (i/factor))*oldRowWidth);
         
             //set new_pixel to the address of the beginning of current row, padding included in newRowWidth
             RGBTRIPLE* new_pixel = (RGBTRIPLE*) (new + i*newRowWidth);
@@ -146,7 +148,12 @@ int main(int argc, char *argv[])
         
     }// end of outer for loop
     
-    fwrite(new, 1, bi.biSizeImage, outptr);
+    size_t result = fwrite(new, 1, bi.biSizeImage, outptr);
+    
+    printf("size_t = %zu\n", result);
+    if (ferror(outptr)) {
+        printf("Error in outfile.\n");
+    }
 
     // free mallocs
     free(old);
