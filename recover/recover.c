@@ -28,12 +28,12 @@ int main(int argc, char *argv[]) {
     int fileLen = ftell(raw_file);
     fseek(raw_file, 0, SEEK_SET);
     
-    printf("Size of image: %d bytes\n", fileLen);
+    //printf("Size of image: %d bytes\n", fileLen);
     
     int numOfBlocks = fileLen/512;
     
     // How many blocks of 512 in the raw_file
-    printf("NUmber of 512 blocks: %d\n", numOfBlocks);
+    //printf("NUmber of 512 blocks: %d\n", numOfBlocks);
     
     // Keep track of JPEGs found
     int jpegCounter = 0;
@@ -43,6 +43,12 @@ int main(int argc, char *argv[]) {
     
     // Filename for JPEGs found
     char filename[8];
+    filename[7] = 1;
+    // print filename see what's in it
+    int m;
+    for (m = 0; m < 8; m++) {
+        printf("filename[%d] = %d\n", m, filename[m]);
+    }
     
     // Temporary storage
     BYTE* buffer = malloc(512);
@@ -51,7 +57,7 @@ int main(int argc, char *argv[]) {
     int j;
     
     for(j = 0; j < numOfBlocks; j++) {
-        printf("j = %d\n", j);
+        //printf("j = %d\n", j);
         // Read jth 512 - block into buffer
         fread(buffer, 512, 1, raw_file);
 
@@ -60,14 +66,14 @@ int main(int argc, char *argv[]) {
            buffer[2] == 0xff && (buffer[3] & 0xf0) == 0xe0) {
             if (img == NULL) {
                 if (jpegCounter == 0) {
-                    printf("first jpeg\n");
+                    //printf("first jpeg\n");
                 }
                 else {
-                    printf("not first jpeg\n");
+                    //printf("not first jpeg\n");
                 }
             }
             
-            printf("Start of an image!\n");
+            //printf("Start of an image!\n");
             // Have we already found a JPEG?
             if (jpegCounter > 0) {
                 // If we have, close the previous JPEG
@@ -77,36 +83,38 @@ int main(int argc, char *argv[]) {
             // if not, we're starting our very first JPEG file
             
             sprintf(filename, "%03i.jpg", jpegCounter);
+            printf("filename last place: %d\n", filename[7]);
             // Increment jpegCounter
             jpegCounter++;
 
             // Open a new JPEG
             img = fopen(filename, "w");
             
-            printf("Writing first 512-block into jpeg\n");
+            //printf("Writing first 512-block into jpeg\n");
             // Write 512-block into JPEG file
             fwrite(buffer, 512, 1, img);
         }
         
         // If we aren't at a new JPEG
         else {
-            printf("Not start of an image\n");
+            //printf("Not start of an image\n");
             // if not currently in the middle of a JPEG
             // discard this 512-block
             if (img == NULL) {
                 printf("jpeg not opened\n");
             }
             else {
-                printf("jpeg file already opened\n");
-                printf("On img: %s\n", filename);
-                printf("writing 512-block into %s\n", filename);
+                //printf("jpeg file already opened\n");
+                //printf("On img: %s\n", filename);
+                //printf("writing 512-block into %s\n", filename);
+                //printf("filename last place: %d\n", filename[7]);
                 // write buffer into img file
                 fwrite(buffer, 512, 1, img);
             }
         }
         
     }
-    printf("Found %d images\n", jpegCounter);
+    //printf("Found %d images\n", jpegCounter);
     // Free mallocs
     free(buffer);
         
