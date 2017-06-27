@@ -1,10 +1,10 @@
-0.  The longest word in the English dictionary. It is a lung disease that one gets from inhaling fine ash and sand dust.
-1.  According to the man page, it gets resource usage measures for the calling process that you specify.
+0.  The longest word in the English dictionary. It is a lung disease that one gets from         inhaling fine ash and sand dust.
+1.  According to the man page, it gets resource usage measures for the calling process that     you specify.
 2.  16
-3.  If we pass these structs by value, then we have to make copies of it which uses a lot of memory. In addition,
+3.  If we pass these structs by value, then we have to make copies of it which uses a lot of     memory. In addition,
     we also avoid accidentally modifying the original value.
     
-4.  You read the text character by character. You begin with the first character in the text file, you check that it is a 
+4.  You read the text character by character. You begin with the first character in the text     file, you check that it is a 
     letter in the alphabet or an apostrophe (making sure that if it is an apostrophe, that it does not appear at the beginning
     of the word). If the character is a number you ignore the rest of the word with fget, which you use until you reach
     the end of the word. Then you are ready to look at the next word in the text. The loop also ignores spaces. the conditionals 
@@ -21,9 +21,9 @@
     we increment the variable mispellings. 
     
     Before moving on to look for a new word, index must be reset to 0.
-5.  The function fscanf will end up reading words even if they have integers and other non alphabetic characters in them. We would 
+5.  The function fscanf will end up reading words even if they have integers and other non       alphabetic characters in them. We would 
     have to screen every word for these things, checking that all the characters are alphabetic anyway. 
     With fgetc we can also keep track of how many characters we've read from a single word. We prevent having words that
     are over our word length limit.
-6.  They are constants because they are meant to not be modified, only to be read. We don't want to be able to modify the words
+6.  They are constants because they are meant to not be modified, only to be read. We don't     want to be able to modify the words
     we are spell checking nor do we want to be able to modify the dictionary we are using to check these words.
