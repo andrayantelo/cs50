@@ -7,11 +7,25 @@
 #include "dictionary.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
-int hash(char *word);
 // Arbitrary number of buckets for hash table
-#define HASH_SIZE 100;
+#define HASH_SIZE 100
+
+int hash(char *word);
+
+// Create the node data type for the hash table
+// each element of the hash table array is a node pointer
+typedef struct node {
+    char word[LENGTH + 1];
+    struct node *next;
+} node;
+
+// Declare the hash table
+node *hashtable[HASH_SIZE];
+
+
 
 /**
  * Returns true if word is in dictionary else false.
@@ -28,14 +42,14 @@ bool check(const char *word)
 
 // Hash function for load
 int hash(char *word) {
-    
+    int index = 0;
     int i;
-    int word_length = 0;
-    
     for (i = 0; i < strlen(word); i++) {
-        printf("hello");
+        index += word[i];
     }
-    return num % HASH_SIZE;  
+    index = index % HASH_SIZE;
+    printf("index: %d\n", index);
+    return index;  
 };
 /**
  * Loads dictionary into memory. Returns true if successful else false.
@@ -57,20 +71,29 @@ bool load(const char *dictionary)
         return false;
     }
     
-    // Create the node data type for the hash table
-    // each element of the hash table array is a node pointer
-    typedef struct node {
-        char word[LENGTH + 1];
-        struct node *next;
-    } node;
+    // For each word in the dictionary, hash it into the
+    // hash table
     
-    // Declare the hash table
-    node *hashtable[HASH_SIZE];
-    
-    
+    // TODO below line is wrong
+    char *word = malloc(LENGTH + 1);
+    while (fscanf(dic_file, "%s", word) != EOF) {
+        // make new node for word
+        node *new_node = malloc(sizeof(node));
+        // Abort if we run out of space
+        if (new_node == NULL) {
+            unload();
+            return false;
+        }
+        // Copy word into node
+        strcpy(new_node -> word, word);
+        
+        // insert new node into linked list in your hash table
+        int index = hash(word);
+        hashtable[index] = new_node;
+    }
     
     // close dictionary file
-    fclose(dictionary);
+    fclose(dic_file);
     
     return false;
 }
@@ -91,5 +114,9 @@ bool unload(void)
 {
     // TODO
     // Frees the dictionary from memory
+    //int i;
+    //for (i = 0; i < HASH_SIZE; i ++) {
+    //    free(hashtable[i]);
+    //}
     return false;
 }
