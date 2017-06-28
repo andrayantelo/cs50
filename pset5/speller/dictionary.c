@@ -11,7 +11,7 @@
 #include <string.h>
 
 // Arbitrary number of buckets for hash table
-#define HASH_SIZE 100
+#define HASH_SIZE 10
 
 int hash(char *word);
 
@@ -23,9 +23,7 @@ typedef struct node {
 } node;
 
 // Declare the hash table
-node *hashtable[HASH_SIZE];
-
-
+node *hashtable[HASH_SIZE] = {NULL};
 
 /**
  * Returns true if word is in dictionary else false.
@@ -56,6 +54,7 @@ int hash(char *word) {
  */
 bool load(const char *dictionary)
 {
+    printf("Running Load\n");
     // TODO
     // Loads the dictionary into a data structure that we have created
     
@@ -74,9 +73,11 @@ bool load(const char *dictionary)
     // For each word in the dictionary, hash it into the
     // hash table
     
-    // TODO below line is wrong
+    // TODO how to declare variable word
+    
     char *word = malloc(LENGTH + 1);
     while (fscanf(dic_file, "%s", word) != EOF) {
+        
         // make new node for word
         node *new_node = malloc(sizeof(node));
         // Abort if we run out of space
@@ -84,18 +85,32 @@ bool load(const char *dictionary)
             unload();
             return false;
         }
+
+        // Initialize next pointer
+        new_node -> next = NULL;
         // Copy word into node
         strcpy(new_node -> word, word);
         
-        // insert new node into linked list in your hash table
-        int index = hash(word);
-        hashtable[index] = new_node;
+        // get word's hash number
+        int index = hash(new_node -> word);
+        // If there isn't a linked list in that index's bucket yet
+        // insert the node to be the head of that particular linked list
+        if (hashtable[index] == NULL) {
+            hashtable[index] = new_node;
+        }
+        else {
+            // Add the new_node to the linked list that is already there
+            // tne new_node will become the new HEAD
+            node *old_head = hashtable[index];
+            new_node -> next = old_head;
+            hashtable[index] = new_node;
+        }
+        
     }
     
     // close dictionary file
     fclose(dic_file);
-    
-    return false;
+    return true;
 }
 
 /**
@@ -114,9 +129,20 @@ bool unload(void)
 {
     // TODO
     // Frees the dictionary from memory
-    //int i;
-    //for (i = 0; i < HASH_SIZE; i ++) {
-    //    free(hashtable[i]);
-    //}
-    return false;
+    int i;
+    for (i = 0; i < HASH_SIZE; i++) {
+        printf("inside hashtable for loop\n");
+        node *cursor = hashtable[i];
+        printf("the first element in hashtable index %d is %p\n", i, cursor);
+        
+        while (cursor != NULL) {
+            printf("inside while loop\n");
+            node *temp = cursor;
+            cursor = cursor -> next;
+            //free(temp -> word);
+            free(temp -> next);
+            free(temp);
+        }
+    }
+    return true;
 }
