@@ -9,11 +9,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 // Arbitrary number of buckets for hash table
 #define HASH_SIZE 10
 
-int hash(char *word);
+/* Returns hash for word*/
+int hash(const char *word);
 
 // Create the node data type for the hash table
 // each element of the hash table array is a node pointer
@@ -31,22 +33,57 @@ node *hashtable[HASH_SIZE] = {NULL};
 bool check(const char *word)
 {
     // TODO
-    // Must be case-sensitive
+    // Must be case-insensitive
     // Checks the dictionary data structure that we created to see if given word
     // is in the dictionary
+    
+    // TODO cannot change word, it is a constant
+    // also messes with words that have apostrophes. 
+    char *temp = (char *) word;
+    for(int i = 0; temp[i]; i++){
+        if (temp[i] == 39) {
+            continue;
+        }
+        temp[i] = tolower(temp[i]);
+    }
+    
+    // Traverse the linked list in the hash table to find our word.
+    // Head of the linked list in the bucket we want to look through
+    node *head = hashtable[hash(word)];
+    
+    node *cursor = head;
+    while(cursor != NULL) {
+        // make cursor -> word lowercase
+        char *cursor_word = cursor -> word;
+        for(int i = 0; cursor_word[i]; i++){
+            cursor_word[i] = tolower(cursor_word[i]);
+        } 
+        int comp = strcasecmp(cursor -> word, word);
+        // if they match
+        if (comp == 0) {
+            // word is spelled correctly (in dictionary)
+            return true;
+        }
+        // if they don't match
+        else {
+            // check next word
+            cursor = cursor -> next;
+        }
+    }
+    // If we are out here, that means we did not find the word or it
+    // was misspelled.
     return false;
 }
 
 
 // Hash function for load
-int hash(char *word) {
+int hash(const char *word) {
     int index = 0;
     int i;
     for (i = 0; i < strlen(word); i++) {
         index += word[i];
     }
     index = index % HASH_SIZE;
-    printf("index: %d\n", index);
     return index;  
 };
 /**
@@ -54,7 +91,6 @@ int hash(char *word) {
  */
 bool load(const char *dictionary)
 {
-    printf("Running Load\n");
     // TODO
     // Loads the dictionary into a data structure that we have created
     
@@ -74,8 +110,7 @@ bool load(const char *dictionary)
     // hash table
     
     // TODO how to declare variable word
-    
-    char *word = malloc(LENGTH + 1);
+    char word[LENGTH + 1] = {0};
     while (fscanf(dic_file, "%s", word) != EOF) {
         
         // make new node for word
@@ -107,7 +142,6 @@ bool load(const char *dictionary)
         }
         
     }
-    
     // close dictionary file
     fclose(dic_file);
     return true;
@@ -119,6 +153,27 @@ bool load(const char *dictionary)
 unsigned int size(void)
 {
     // TODO
+    // Check if the hashtable has anything in it
+    int i;
+    int wordCount = 0;
+    for (i = 0; i < HASH_SIZE; i++) {
+        node *head = hashtable[i];
+        if (head == NULL) {
+            continue;
+        }
+        else {
+            // traverse linked list and count the words
+            node *cursor = head;
+            while (cursor != NULL) {
+                wordCount++;
+                cursor = cursor -> next;
+            }
+        }
+    }
+    if (wordCount > 0) {
+        //printf("Word count: %d\n", wordCount);
+        return wordCount;
+    }
     return 0;
 }
 
@@ -131,16 +186,10 @@ bool unload(void)
     // Frees the dictionary from memory
     int i;
     for (i = 0; i < HASH_SIZE; i++) {
-        printf("inside hashtable for loop\n");
         node *cursor = hashtable[i];
-        printf("the first element in hashtable index %d is %p\n", i, cursor);
-        
         while (cursor != NULL) {
-            printf("inside while loop\n");
             node *temp = cursor;
             cursor = cursor -> next;
-            //free(temp -> word);
-            free(temp -> next);
             free(temp);
         }
     }

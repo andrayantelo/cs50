@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
     char word[LENGTH+1];
 
     // spell-check each word in text
-    for (int c = fgetc(fp); c != EOF; c = fgetc(fp))
+    int c;
+    for (c = fgetc(fp); c != EOF; c = fgetc(fp))
     {
         // allow only alphabetical characters and apostrophes
         if (isalpha(c) || (c == '\'' && index > 0))
