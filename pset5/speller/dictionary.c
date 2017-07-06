@@ -36,7 +36,15 @@ uint32_t adler32(const char *data, size_t len)
 };
 
 /* Returns hash for word*/
-int hash(const char *word);
+int hash(const char *word) {
+    int index = 0;
+    int i;
+    for (i = 0; i < strlen(word); i++) {
+        index += tolower(word[i]);
+    }
+    index = index % HASH_SIZE;
+    return index;  
+};
 
 // Create the node data type for the hash table
 // each element of the hash table array is a node pointer
@@ -80,18 +88,6 @@ bool check(const char *word)
     // was misspelled.
     return false;
 }
-
-
-// Hash function for load
-int hash(const char *word) {
-    int index = 0;
-    int i;
-    for (i = 0; i < strlen(word); i++) {
-        index += tolower(word[i]);
-    }
-    index = index % HASH_SIZE;
-    return index;  
-};
 
 /**
  * Loads dictionary into memory. Returns true if successful else false.
