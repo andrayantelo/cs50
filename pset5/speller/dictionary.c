@@ -12,7 +12,28 @@
 #include <ctype.h>
 
 // Arbitrary number of buckets for hash table
-#define HASH_SIZE 10
+#define HASH_SIZE 10000
+
+const int MOD_ADLER = 65521;
+
+// Hash function found on the internet 
+// https://en.wikipedia.org/wiki/Adler-32
+uint32_t adler32(const char *data, size_t len) 
+/* where data is the location of the data in physical memory and 
+   len is the length of the data in bytes */
+{
+    uint32_t a = 1, b = 0;
+    size_t index;
+    
+    /* Process each byte of the data in order */
+    for (index = 0; index < len; ++index)
+    {
+        a = (a + data[index]) % MOD_ADLER;
+        b = (b + a) % MOD_ADLER;
+    }
+    
+    return ((b << 16) | a) % HASH_SIZE;
+};
 
 /* Returns hash for word*/
 int hash(const char *word);
@@ -27,38 +48,23 @@ typedef struct node {
 // Declare the hash table
 node *hashtable[HASH_SIZE] = {NULL};
 
+// TODO Make a hashtable datatype
+
 /**
  * Returns true if word is in dictionary else false.
  */
 bool check(const char *word)
 {
-    // TODO
-    // Must be case-insensitive
-    // Checks the dictionary data structure that we created to see if given word
-    // is in the dictionary
-    
-    // TODO cannot change word, it is a constant
-    // also messes with words that have apostrophes. 
-    char *temp = (char *) word;
-    for(int i = 0; temp[i]; i++){
-        if (temp[i] == 39) {
-            continue;
-        }
-        temp[i] = tolower(temp[i]);
-    }
-    
     // Traverse the linked list in the hash table to find our word.
     // Head of the linked list in the bucket we want to look through
-    node *head = hashtable[hash(word)];
+    node *head = hashtable[adler32(word, sizeof(word))];
     
     node *cursor = head;
+    
     while(cursor != NULL) {
-        // make cursor -> word lowercase
-        char *cursor_word = cursor -> word;
-        for(int i = 0; cursor_word[i]; i++){
-            cursor_word[i] = tolower(cursor_word[i]);
-        } 
+        
         int comp = strcasecmp(cursor -> word, word);
+        
         // if they match
         if (comp == 0) {
             // word is spelled correctly (in dictionary)
@@ -81,17 +87,17 @@ int hash(const char *word) {
     int index = 0;
     int i;
     for (i = 0; i < strlen(word); i++) {
-        index += word[i];
+        index += tolower(word[i]);
     }
     index = index % HASH_SIZE;
     return index;  
 };
+
 /**
  * Loads dictionary into memory. Returns true if successful else false.
  */
 bool load(const char *dictionary)
 {
-    // TODO
     // Loads the dictionary into a data structure that we have created
     
     // Hash table version
@@ -108,9 +114,8 @@ bool load(const char *dictionary)
     
     // For each word in the dictionary, hash it into the
     // hash table
-    
-    // TODO how to declare variable word
     char word[LENGTH + 1] = {0};
+    printf("size of word: %lu\n", sizeof(word));
     while (fscanf(dic_file, "%s", word) != EOF) {
         
         // make new node for word
@@ -127,7 +132,7 @@ bool load(const char *dictionary)
         strcpy(new_node -> word, word);
         
         // get word's hash number
-        int index = hash(new_node -> word);
+        int index = adler32(new_node -> word, sizeof(new_node -> word));
         // If there isn't a linked list in that index's bucket yet
         // insert the node to be the head of that particular linked list
         if (hashtable[index] == NULL) {
@@ -152,7 +157,6 @@ bool load(const char *dictionary)
  */
 unsigned int size(void)
 {
-    // TODO
     // Check if the hashtable has anything in it
     int i;
     int wordCount = 0;
@@ -171,7 +175,6 @@ unsigned int size(void)
         }
     }
     if (wordCount > 0) {
-        //printf("Word count: %d\n", wordCount);
         return wordCount;
     }
     return 0;
@@ -182,7 +185,6 @@ unsigned int size(void)
  */
 bool unload(void)
 {
-    // TODO
     // Frees the dictionary from memory
     int i;
     for (i = 0; i < HASH_SIZE; i++) {
