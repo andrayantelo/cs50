@@ -55,12 +55,18 @@ typedef struct node {
 
 // TODO Make a hashtable datatype
 typedef struct hashtable {
-    node *hashtable[HASH_SIZE] = {NULL};
+    node *hashtable[HASH_SIZE];
     int wordCount;
 } hashtable;
 
 // Declare the hash table
 hashtable *new_hashtable = malloc(sizeof(hashtable));
+
+new_hashtable -> wordCount = 0;
+new_hashtable -> hashtable = {NULL};
+// remember hashtable
+node *table = new_hashtable -> hashtable;
+
 
 /**
  * Returns true if word is in dictionary else false.
@@ -69,7 +75,7 @@ bool check(const char *word)
 {
     // Traverse the linked list in the hash table to find our word.
     // Head of the linked list in the bucket we want to look through
-    node *head = hashtable[adler32(word, sizeof(word))];
+    node *head = table[adler32(word, sizeof(word))];
     
     node *cursor = head;
     
@@ -121,6 +127,7 @@ bool load(const char *dictionary)
         
         // make new node for word
         node *new_node = malloc(sizeof(node));
+        
         // Abort if we run out of space
         if (new_node == NULL) {
             unload();
@@ -136,15 +143,15 @@ bool load(const char *dictionary)
         int index = adler32(new_node -> word, sizeof(new_node -> word));
         // If there isn't a linked list in that index's bucket yet
         // insert the node to be the head of that particular linked list
-        if (hashtable[index] == NULL) {
-            hashtable[index] = new_node;
+        if (table[index] == NULL) {
+            table[index] = new_node;
         }
         else {
             // Add the new_node to the linked list that is already there
             // tne new_node will become the new HEAD
-            node *old_head = hashtable[index];
+            node *old_head = table[index];
             new_node -> next = old_head;
-            hashtable[index] = new_node;
+            table[index] = new_node;
         }
         
     }
@@ -162,7 +169,7 @@ unsigned int size(void)
     int i;
     int wordCount = 0;
     for (i = 0; i < HASH_SIZE; i++) {
-        node *head = hashtable[i];
+        node *head = table[i];
         if (head == NULL) {
             continue;
         }
@@ -189,7 +196,7 @@ bool unload(void)
     // Frees the dictionary from memory
     int i;
     for (i = 0; i < HASH_SIZE; i++) {
-        node *cursor = hashtable[i];
+        node *cursor = table[i];
         while (cursor != NULL) {
             node *temp = cursor;
             cursor = cursor -> next;
