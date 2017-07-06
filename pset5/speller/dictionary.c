@@ -49,14 +49,13 @@ int hash(const char *word) {
 // Create the node data type for the hash table
 // each element of the hash table array is a node pointer
 typedef struct node {
-    char word[LENGTH + 1];
-    struct node *next;
+    bool is_word;
+    struct node *children[27];
 } node;
 
-// Declare the hash table
-node *hashtable[HASH_SIZE] = {NULL};
+// Root of trie
+node *root;
 
-// TODO Make a hashtable datatype
 
 /**
  * Returns true if word is in dictionary else false.
