@@ -181,8 +181,6 @@ bool load(const char *dictionary)
         
     }
     
-    // free temp_hashtable? TODO
-    
     // close dictionary file
     fclose(dic_file);
     return true;
