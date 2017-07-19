@@ -14,27 +14,6 @@
 // Arbitrary number of buckets for hash table
 #define HASH_SIZE 10000
 
-const int MOD_ADLER = 65521;
-
-// Hash function found on the internet 
-// https://en.wikipedia.org/wiki/Adler-32
-uint32_t adler32(const char *data, size_t len) 
-/* where data is the location of the data in physical memory and 
-   len is the length of the data in bytes */
-{
-    uint32_t a = 1, b = 0;
-    size_t index;
-    
-    /* Process each byte of the data in order */
-    for (index = 0; index < len; ++index)
-    {
-        a = (a + data[index]) % MOD_ADLER;
-        b = (b + a) % MOD_ADLER;
-    }
-    
-    return ((b << 16) | a) % HASH_SIZE;
-};
-
 /* Returns hash for word*/
 int hash(const char *word) {
     int index = 0;
