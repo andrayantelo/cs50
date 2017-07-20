@@ -13,6 +13,7 @@
 
 // Arbitrary number of buckets for hash table
 #define HASH_SIZE 10000
+#define CHAR_AMOUNT 27
 
 /* Returns hash for word*/
 int hash(const char *word) {
@@ -29,7 +30,7 @@ int hash(const char *word) {
 // each element of the hash table array is a node pointer
 typedef struct node {
     bool is_word;
-    struct node *children[27];
+    struct node *children[CHAR_AMOUNT];
 } node;
 
 // Root of trie
@@ -43,7 +44,7 @@ bool check(const char *word)
 {
     // Traverse the linked list in the hash table to find our word.
     // Head of the linked list in the bucket we want to look through
-    node *head = hashtable[adler32(word, sizeof(word))];
+    /*node *head = hashtable[hash(word)];
     
     node *cursor = head;
     
@@ -63,8 +64,24 @@ bool check(const char *word)
         }
     }
     // If we are out here, that means we did not find the word or it
-    // was misspelled.
+    */// was misspelled.
     return false;
+}
+
+/* Finds a letter's place in the alphabet */
+int letter_index(char letter) {
+    int letter_index;
+    if (isupper(letter)) {
+        letter_index = letter % 65;
+    }
+    else if (islower(letter)) {
+        letter_index = letter % 97;
+    }
+    else {
+        // we have another char
+        letter_index = 27;
+    }
+    return letter_index;         
 }
 
 /**
@@ -74,7 +91,7 @@ bool load(const char *dictionary)
 {
     // Loads the dictionary into a data structure that we have created
     
-    // Hash table version
+    // Trie version
     
     // Open the dictionary file
     FILE *dic_file = fopen(dictionary, "r");
@@ -86,41 +103,47 @@ bool load(const char *dictionary)
         return false;
     }
     
-    // For each word in the dictionary, hash it into the
-    // hash table
+    // Initiate root node (with NULL pointers)
+    //root -> children[27];
+    
     char word[LENGTH + 1] = {0};
-    printf("size of word: %lu\n", sizeof(word));
+    // for every dictionary word,
+    //iterate through the trie
+    
+    // cursor
+    struct node *cursor = malloc(sizeof(node));
+    cursor = root;
+    
     while (fscanf(dic_file, "%s", word) != EOF) {
-        
-        // make new node for word
-        node *new_node = malloc(sizeof(node));
-        // Abort if we run out of space
-        if (new_node == NULL) {
-            unload();
-            return false;
-        }
-
-        // Initialize next pointer
-        new_node -> next = NULL;
-        // Copy word into node
-        strcpy(new_node -> word, word);
-        
-        // get word's hash number
-        int index = adler32(new_node -> word, sizeof(new_node -> word));
-        // If there isn't a linked list in that index's bucket yet
-        // insert the node to be the head of that particular linked list
-        if (hashtable[index] == NULL) {
-            hashtable[index] = new_node;
-        }
-        else {
-            // Add the new_node to the linked list that is already there
-            // tne new_node will become the new HEAD
-            node *old_head = hashtable[index];
-            new_node -> next = old_head;
-            hashtable[index] = new_node;
-        }
-        
+        int i;
+    
+        for (i = 0; i < strlen(word); i++) {
+            // get the letter's index in the alphabet
+            int index = letter_index(word[i]);
+            
+            cursor = cursor -> children[index];
+            
+            // each element in children corresponds to
+            // a different letter
+            // check the value at children[i]
+            if (cursor == NULL) {
+                // if NULL, malloc a new node, have 
+                // children[i] point to it
+                node *new_node = malloc(sizeof(node));
+                cursor = new_node;
+            }
+            // if not null, move to new node and continue
+            
+            // if at end of word, set
+            // is_word to true
+            if (i == strlen(word)) {                   
+                cursor -> is_word = true;
+            }
+        }// end of for loop
     }
+    
+    // free cursor
+    free(cursor);
     // close dictionary file
     fclose(dic_file);
     return true;
@@ -132,7 +155,7 @@ bool load(const char *dictionary)
 unsigned int size(void)
 {
     // Check if the hashtable has anything in it
-    int i;
+    /*int i;
     int wordCount = 0;
     for (i = 0; i < HASH_SIZE; i++) {
         node *head = hashtable[i];
@@ -150,7 +173,7 @@ unsigned int size(void)
     }
     if (wordCount > 0) {
         return wordCount;
-    }
+    }*/
     return 0;
 }
 
@@ -161,13 +184,17 @@ bool unload(void)
 {
     // Frees the dictionary from memory
     int i;
-    for (i = 0; i < HASH_SIZE; i++) {
-        node *cursor = hashtable[i];
+    for (i = 0; i < CHAR_AMOUNT; i++) {
+        node *cursor = root -> children[i];
         while (cursor != NULL) {
-            node *temp = cursor;
-            cursor = cursor -> next;
-            free(temp);
+            //node *temp = cursor;
+            cursor = cursor -> children[i];
+            //free(temp);
         }
+        free(cursor);
     }
     return true;
 }
+
+
+
