@@ -103,19 +103,16 @@ bool load(const char *dictionary)
         return false;
     }
     
-    // Initiate root node (with NULL pointers)
-    //root -> children[27];
-    
     char word[LENGTH + 1] = {0};
-    // for every dictionary word,
-    //iterate through the trie
     
+    // initiate root
+    root = calloc(1, sizeof(node));
     // cursor
-    struct node *cursor = malloc(sizeof(node));
+    struct node *cursor;
     cursor = root;
+    int i;
     
     while (fscanf(dic_file, "%s", word) != EOF) {
-        int i;
     
         for (i = 0; i < strlen(word); i++) {
             // get the letter's index in the alphabet
@@ -130,16 +127,15 @@ bool load(const char *dictionary)
                 // if NULL, malloc a new node, have 
                 // children[i] point to it
                 node *new_node = malloc(sizeof(node));
+                // TODO these nodes need to be freed
                 cursor = new_node;
             }
             // if not null, move to new node and continue
-            
-            // if at end of word, set
-            // is_word to true
-            if (i == strlen(word)) {                   
-                cursor -> is_word = true;
-            }
-        }// end of for loop
+
+        } // end of for loop
+        // if we have left the for loop, cursor should be pointing at the last letter of word
+        // set is_word to true
+        cursor -> is_word = true;
     }
     
     // free cursor
@@ -177,22 +173,39 @@ unsigned int size(void)
     return 0;
 }
 
+/** Frees nodes **/
+// have some function free_node(node* n)
+// and it loops over the children array and calls free_node on everything 
+// non_null and then sets it to null, then frees n and returns
+
+void free_node(node **n) {
+    // it takes a node pointer and calls free_node on all the node pointers
+    // in that node's children array, then it frees the node pointer
+    if (n == NULL || *n == NULL) {
+        return;
+    }
+  
+    // traverse through n's children array;
+    int i;
+    for (i = 0; i < CHAR_AMOUNT; i++) {
+ 
+        free_node(&(*n)->children[i]);
+    }
+    free(n);
+    // set the pointer equal to NULL so that we 
+    // don't have pointers pointing to random stuff
+    *n = NULL;
+}
+
 /**
  * Unloads dictionary from memory. Returns true if successful else false.
  */
 bool unload(void)
 {
     // Frees the dictionary from memory
-    int i;
-    for (i = 0; i < CHAR_AMOUNT; i++) {
-        node *cursor = root -> children[i];
-        while (cursor != NULL) {
-            //node *temp = cursor;
-            cursor = cursor -> children[i];
-            //free(temp);
-        }
-        free(cursor);
-    }
+    
+    //node *cursor = root;
+    //free_node(&cursor);
     return true;
 }
 
