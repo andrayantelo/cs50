@@ -18,17 +18,6 @@
 
 int letter_index(char letter);
 
-/* Returns hash for word*/
-int hash(const char *word) {
-    int index = 0;
-    int i;
-    for (i = 0; i < strlen(word); i++) {
-        index += tolower(word[i]);
-    }
-    index = index % HASH_SIZE;
-    return index;  
-};
-
 int wordCount;
 bool loaded = false;
 
@@ -67,22 +56,17 @@ bool check(const char *word)
             cursor = cursor -> children[index];
         }
     }
-    if (cursor -> is_word) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return cursor -> is_word;
 }
 
 /* Finds a letter's place in the alphabet */
 int letter_index(char letter) {
     int letter_index;
     if (isupper(letter)) {
-        letter_index = letter % 65;
+        letter_index = letter - 'A';
     }
     else if (islower(letter)) {
-        letter_index = letter % 97;
+        letter_index = letter - 'a';
     }
     else {
         // we have another char
@@ -105,9 +89,7 @@ void insert_word(node *n, char *word) {
         if (n -> children[index] == NULL) {
             // if NULL, malloc a new node, have 
             // children[i] point to it
-            node *new_node = malloc(sizeof(node));
-            // TODO these nodes need to be freed
-            n -> children[index] = new_node;
+            n -> children[index] = malloc(sizeof(node));
         }
         // if not null, move to new node and continue
         n = n -> children[index];
@@ -142,6 +124,10 @@ bool load(const char *dictionary)
     
     // initialze root, do I have to initiate root TODO
     root = calloc(1, sizeof(node));
+    // check it worked
+    if (root == NULL) {
+        return false;
+    }
     // initialize wordCount
     wordCount = 0;
     
@@ -171,12 +157,7 @@ unsigned int find_words(node *n) {
 unsigned int size(void)
 {
     // Check if the trie has anything in it
-    if (loaded) {
-        return wordCount;
-    }
-    else {
-        return 0;
-    }
+    return loaded ? wordCount : 0;
 }
 
 /** Frees nodes **/
@@ -212,7 +193,7 @@ bool unload(void)
     // Frees the dictionary from memory
     
     free_node(&root);
-    free(root);
+    
     loaded = false;
     return true;
 }
