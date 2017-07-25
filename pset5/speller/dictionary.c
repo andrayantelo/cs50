@@ -10,10 +10,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 // Arbitrary number of buckets for hash table
 #define HASH_SIZE 10000
 #define CHAR_AMOUNT 27
+
+int letter_index(char letter);
 
 /* Returns hash for word*/
 int hash(const char *word) {
@@ -25,6 +28,9 @@ int hash(const char *word) {
     index = index % HASH_SIZE;
     return index;  
 };
+
+int wordCount;
+bool loaded = false;
 
 // Create the node data type for the hash table
 // each element of the hash table array is a node pointer
@@ -42,30 +48,31 @@ node *root;
  */
 bool check(const char *word)
 {
-    // Traverse the linked list in the hash table to find our word.
-    // Head of the linked list in the bucket we want to look through
-    /*node *head = hashtable[hash(word)];
+    // for each letter in input word
+      // go to corresponding element in children
+        // if NULL, word is mispelled
+        // if not NULL, move to next letter
+      // once at end of input word
+        // check if is_word true
     
-    node *cursor = head;
+    node *cursor = root;
+    int i;
     
-    while(cursor != NULL) {
-        
-        int comp = strcasecmp(cursor -> word, word);
-        
-        // if they match
-        if (comp == 0) {
-            // word is spelled correctly (in dictionary)
-            return true;
+    for (i = 0; i < strlen(word); i++) {
+        int index = letter_index(word[i]);
+        if (cursor -> children[index] == NULL) {
+            return false; 
         }
-        // if they don't match
         else {
-            // check next word
-            cursor = cursor -> next;
+            cursor = cursor -> children[index];
         }
     }
-    // If we are out here, that means we did not find the word or it
-    */// was misspelled.
-    return false;
+    if (cursor -> is_word) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 /* Finds a letter's place in the alphabet */
@@ -82,6 +89,34 @@ int letter_index(char letter) {
         letter_index = 27;
     }
     return letter_index;         
+}
+
+void insert_word(node *n, char *word) {
+    // Takes a pointer to a node and a string and it inserts
+    // the string into trie starting at that node
+    int i;
+    for (i = 0; i < strlen(word); i++) {
+        // get the letter's index in the alphabet
+        int index = letter_index(word[i]);
+
+        // each element in children corresponds to
+        // a different letter
+        // check the value at children[i]
+        if (n -> children[index] == NULL) {
+            // if NULL, malloc a new node, have 
+            // children[i] point to it
+            node *new_node = malloc(sizeof(node));
+            // TODO these nodes need to be freed
+            n -> children[index] = new_node;
+        }
+        // if not null, move to new node and continue
+        n = n -> children[index];
+
+    } // end of for loop
+    // if we have left the for loop, cursor should be pointing at the last letter of word
+    // set is_word to true
+    n -> is_word = true;   
+    
 }
 
 /**
@@ -105,72 +140,43 @@ bool load(const char *dictionary)
     
     char word[LENGTH + 1] = {0};
     
-    // initiate root
+    // initialze root, do I have to initiate root TODO
     root = calloc(1, sizeof(node));
-    // cursor
-    struct node *cursor;
-    cursor = root;
-    int i;
+    // initialize wordCount
+    wordCount = 0;
     
     while (fscanf(dic_file, "%s", word) != EOF) {
-    
-        for (i = 0; i < strlen(word); i++) {
-            // get the letter's index in the alphabet
-            int index = letter_index(word[i]);
-            
-            cursor = cursor -> children[index];
-            
-            // each element in children corresponds to
-            // a different letter
-            // check the value at children[i]
-            if (cursor == NULL) {
-                // if NULL, malloc a new node, have 
-                // children[i] point to it
-                node *new_node = malloc(sizeof(node));
-                // TODO these nodes need to be freed
-                cursor = new_node;
-            }
-            // if not null, move to new node and continue
+        wordCount++;
+        insert_word(root, word);
 
-        } // end of for loop
-        // if we have left the for loop, cursor should be pointing at the last letter of word
-        // set is_word to true
-        cursor -> is_word = true;
     }
-    
-    // free cursor
-    free(cursor);
+
     // close dictionary file
     fclose(dic_file);
+    loaded = true;
     return true;
 }
+
+/** Returns number of words found in *node n
+unsigned int find_words(node *n) {
+    int i;
+    for (i = 0; i < CHAR_AMOUNT; i++) {
+        if (n -> )
+    }
+}*/
 
 /**
  * Returns number of words in dictionary if loaded else 0 if not yet loaded.
  */
 unsigned int size(void)
 {
-    // Check if the hashtable has anything in it
-    /*int i;
-    int wordCount = 0;
-    for (i = 0; i < HASH_SIZE; i++) {
-        node *head = hashtable[i];
-        if (head == NULL) {
-            continue;
-        }
-        else {
-            // traverse linked list and count the words
-            node *cursor = head;
-            while (cursor != NULL) {
-                wordCount++;
-                cursor = cursor -> next;
-            }
-        }
-    }
-    if (wordCount > 0) {
+    // Check if the trie has anything in it
+    if (loaded) {
         return wordCount;
-    }*/
-    return 0;
+    }
+    else {
+        return 0;
+    }
 }
 
 /** Frees nodes **/
@@ -184,14 +190,15 @@ void free_node(node **n) {
     if (n == NULL || *n == NULL) {
         return;
     }
-  
+    
     // traverse through n's children array;
     int i;
     for (i = 0; i < CHAR_AMOUNT; i++) {
- 
-        free_node(&(*n)->children[i]);
+        free_node(&((*n)->children[i]));
     }
-    free(n);
+    if (*n != NULL) {
+        free(*n);
+    }
     // set the pointer equal to NULL so that we 
     // don't have pointers pointing to random stuff
     *n = NULL;
@@ -204,8 +211,9 @@ bool unload(void)
 {
     // Frees the dictionary from memory
     
-    //node *cursor = root;
-    //free_node(&cursor);
+    free_node(&root);
+    free(root);
+    loaded = false;
     return true;
 }
 
