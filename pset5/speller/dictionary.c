@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <assert.h>
 
 // Arbitrary number of buckets for hash table
 #define HASH_SIZE 10000
@@ -70,8 +71,10 @@ int letter_index(char letter) {
     }
     else {
         // we have another char
-        letter_index = 27;
+        letter_index = 26;
     }
+    
+    assert(letter_index >= 0 && letter_index < CHAR_AMOUNT);
     return letter_index;         
 }
 
