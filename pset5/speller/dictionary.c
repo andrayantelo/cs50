@@ -13,10 +13,9 @@
 #include <stdbool.h>
 #include <assert.h>
 
-// Arbitrary number of buckets for hash table
-#define HASH_SIZE 10000
 #define CHAR_AMOUNT 27
 
+/* Finds a letter's place in the alphabet */
 int letter_index(char letter);
 
 int wordCount;
@@ -125,7 +124,7 @@ bool load(const char *dictionary)
     
     char word[LENGTH + 1] = {0};
     
-    // initialze root, do I have to initiate root TODO
+    // initialze root
     root = calloc(1, sizeof(node));
     // check it worked
     if (root == NULL) {
@@ -135,9 +134,8 @@ bool load(const char *dictionary)
     wordCount = 0;
     
     while (fscanf(dic_file, "%s", word) != EOF) {
-        wordCount++;
         insert_word(root, word);
-
+        wordCount++;
     }
 
     // close dictionary file
@@ -145,14 +143,6 @@ bool load(const char *dictionary)
     loaded = true;
     return true;
 }
-
-/** Returns number of words found in *node n
-unsigned int find_words(node *n) {
-    int i;
-    for (i = 0; i < CHAR_AMOUNT; i++) {
-        if (n -> )
-    }
-}*/
 
 /**
  * Returns number of words in dictionary if loaded else 0 if not yet loaded.
@@ -164,13 +154,10 @@ unsigned int size(void)
 }
 
 /** Frees nodes **/
-// have some function free_node(node* n)
-// and it loops over the children array and calls free_node on everything 
-// non_null and then sets it to null, then frees n and returns
-
 void free_node(node **n) {
     // it takes a node pointer and calls free_node on all the node pointers
-    // in that node's children array, then it frees the node pointer
+    // in that node's children array, then it frees the node pointer that
+    // was given
     if (n == NULL || *n == NULL) {
         return;
     }
