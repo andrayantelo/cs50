@@ -91,7 +91,7 @@ void insert_word(node *n, char *word) {
         if (n -> children[index] == NULL) {
             // if NULL, malloc a new node, have 
             // children[i] point to it
-            n -> children[index] = malloc(sizeof(node));
+            n -> children[index] = calloc(1, sizeof(node));
         }
         // if not null, move to new node and continue
         n = n -> children[index];
