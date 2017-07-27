@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #define HASH_SIZE 1000
+#define LENGTH 45
 
 void Pearson16(const char *x, size_t len) {
     size_t i;
@@ -38,6 +39,28 @@ void Pearson16(const char *x, size_t len) {
     }
     
     return (int) hh % HASH_SIZE;
+}
+
+typedef struct node {
+    char *word
+} node;
+
+
+int check(const char *word) {
+    /* Checks if word is in our dictionary, returns true if it is
+      false otherwise */
+}
+
+int load() {
+    /* Loads dictionary into data structure, returns true if successful */
+}
+
+int unload() {
+    /* unloads dictionary, frees all malloced memory, returns true if successful */
+}
+
+int size() {
+    /* returns size of dictionary*/
 }
 
 
