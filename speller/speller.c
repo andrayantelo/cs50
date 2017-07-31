@@ -1,11 +1,13 @@
 /* Hashtable version */
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define HASH_SIZE 1000
 #define LENGTH 45
+#define DICTIONARY "dictionaries/large"
 
-void Pearson16(const char *x, size_t len) {
+int Pearson16(const char *x, size_t len) {
     size_t i;
     size_t j;
     unsigned char h;
@@ -41,32 +43,73 @@ void Pearson16(const char *x, size_t len) {
     return (int) hh % HASH_SIZE;
 }
 
+// Define the node type
 typedef struct node {
-    char *word
+    char *word[LENGTH + 1];
+    struct node* next;
 } node;
 
+// Declare hashtable variable
+// hashtable is going to be an array of node pointers
+// hashtable will be initialized in the load function
+node *hashtable[HASH_SIZE];
+
+// Has the dictionary been loaded or not
+bool loaded = false;
 
 int check(const char *word) {
     /* Checks if word is in our dictionary, returns true if it is
       false otherwise */
+    return false;
 }
 
-int load() {
-    /* Loads dictionary into data structure, returns true if successful */
+int load(const char* dic) {
+    /* Loads dictionary into data structure, returns true if successful
+    dic is the name of the dictionary file*/
+    
+    // open the dictionary file
+    FILE *dic_file = fopen(dic, "r");
+
+    // check that it opened correctly, if not exit program
+    if (dic_file == NULL) {
+        fprintf(stderr, "Could not open %s file.\n", dic);
+        return false;
+    }
+    
+    // Initialize hashtable
+    node *hashtable[HASH_SIZE] = {0};
+    
+    // declare word variable
+    char word[LENGTH + 1];
+    
+    while(fscanf(dic_file, "%s", word) != EOF) {
+        printf("word\n");
+    }
+    return false;
 }
 
 int unload() {
     /* unloads dictionary, frees all malloced memory, returns true if successful */
+    return false;
 }
 
 int size() {
     /* returns size of dictionary*/
+    return false;
 }
 
 
-int main(void) {
-    const char *word = "are";
+int main(int argc, char *argv[]) {
     
+    // Ensure that you have the correct number of arguments
+    if (argc != 2 && argc != 3) {
+        fprintf(stderr, "Correct usage: ./speller dictionary text\n");
+        return 1;
+    }
     
-    Pearson16(word, sizeof(word));
+    // remember dictionary
+    char* dictionary = (argc == 3) ? argv[1]: DICTIONARY;
+    
+    load(dictionary);
+    
 }
