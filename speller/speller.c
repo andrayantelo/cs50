@@ -236,5 +236,8 @@ int main(int argc, char *argv[]) {
     // TODO be able to go through a text file, take out the words 
     // that have only the alphabet or apostrophes (but don't start with
     // apostrophes), and have each one of them checked for spelling
-    // then print out how many were mispelled
+    // then print out how many were misspelled
+    
+    // TODO
+    // print out words in text, words in dictionary as well
 }
