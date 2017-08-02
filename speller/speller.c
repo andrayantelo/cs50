@@ -2,8 +2,10 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define HASH_SIZE 1000
+#define HASH_SIZE 10
 #define LENGTH 45
 #define DICTIONARY "dictionaries/large"
 
@@ -77,23 +79,81 @@ int load(const char* dic) {
     }
     
     // Initialize hashtable
-    node *hashtable[HASH_SIZE] = {0};
+    node *hashtable[HASH_SIZE] = {NULL};
     
     // declare word variable
     char word[LENGTH + 1];
     
     while(fscanf(dic_file, "%s", word) != EOF) {
-        printf("word\n");
+        // find the hash for the word
+        int hash_index = Pearson16(word, strlen(word));
+        
+        // malloc some memory for new node
+        node *new_node = malloc(sizeof(node));
+        
+        // fail if we ran out of memory
+        if (new_node == NULL) {
+            return false;
+        }
+                                
+        // update new_node's word
+        memcpy(new_node, word, sizeof(word));
+                                
+        // place word into hashtable
+        // check if there ia a node in hashtable[hash_index]
+        if (hashtable[hash_index] == NULL) {
+            // there is no linked list here yet
+            // start a linked list
+            hashtable[hash_index] = new_node;
+        }
+                                
+        // if there is a linked list there already
+        // then we need to insert the new node in there as the
+        // new head of the linked list
+        else {
+            // remember old head of linked list
+            node *old_head = hashtable[hash_index];
+            // point the new node's next pointer to the old head
+            // of the linked list
+            new_node -> next = old_head;
+            // make the new node the new head of the linked list
+            hashtable[hash_index] = new_node;
+        }
     }
+        
+    // close the dictionary file
+    fclose(dic_file);
     return false;
 }
 
-int unload() {
+void print_hashtable(node *table[HASH_SIZE]) {
+    // loop through hash table and print out a visual representation of 
+    // the table
+    
+    int i;
+    for (i = 0; i < HASH_SIZE; i++) {
+        if (table[i] == NULL) {
+            printf(".\n");
+        }
+        else {
+            // loop through the linked list and
+            // print out each word 
+            node *cursor = table[i];
+            while (cursor != NULL) {
+                printf("%s", *cursor -> word);
+                cursor = cursor -> next;
+            }
+            printf("\n");
+        }
+    }
+}
+
+int unload(void) {
     /* unloads dictionary, frees all malloced memory, returns true if successful */
     return false;
 }
 
-int size() {
+int size(void) {
     /* returns size of dictionary*/
     return false;
 }
@@ -111,5 +171,6 @@ int main(int argc, char *argv[]) {
     char* dictionary = (argc == 3) ? argv[1]: DICTIONARY;
     
     load(dictionary);
+    print_hashtable(hashtable);
     
 }
