@@ -4,12 +4,13 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-#define HASH_SIZE 10
+#define HASH_SIZE 100
 #define LENGTH 45
 #define DICTIONARY "dictionaries/large"
 
-int Pearson16(const char *x, size_t len) {
+unsigned int Pearson16(const char *x, size_t len) {
     size_t i;
     size_t j;
     unsigned char h;
@@ -37,17 +38,18 @@ int Pearson16(const char *x, size_t len) {
     for (j = 0; j < 8; ++j) {
       h = T[(x[0] + j) % 256];
       for (i = 1; i < len; ++i) {
-         h = T[h ^ x[i]];
+         h = T[h ^ tolower(x[i])];
       }
       hh[j] = h;
     }
     
-    return (int) hh % HASH_SIZE;
+    unsigned int value = (*(unsigned int*)hh)%HASH_SIZE;
+    return value;
 }
 
 // Define the node type
 typedef struct node {
-    char *word[LENGTH + 1];
+    char word[LENGTH + 1];
     struct node* next;
 } node;
 
@@ -85,8 +87,11 @@ int load(const char* dic) {
     char word[LENGTH + 1];
     
     while(fscanf(dic_file, "%s", word) != EOF) {
+        printf("the word is %s\n", word);
+        printf("the length of word is %zu\n", strlen(word));
         // find the hash for the word
-        int hash_index = Pearson16(word, strlen(word));
+        unsigned int hash_index = Pearson16(word, strlen(word));
+        printf("the hash index is %d\n", hash_index);
         
         // malloc some memory for new node
         node *new_node = malloc(sizeof(node));
@@ -96,9 +101,10 @@ int load(const char* dic) {
             return false;
         }
                                 
-        // update new_node's word
-        memcpy(new_node, word, sizeof(word));
-                                
+        // update new_node's word and next pointer
+        strcpy(new_node -> word, word;
+        new_node -> next = NULL;
+        
         // place word into hashtable
         // check if there ia a node in hashtable[hash_index]
         if (hashtable[hash_index] == NULL) {
@@ -123,7 +129,7 @@ int load(const char* dic) {
         
     // close the dictionary file
     fclose(dic_file);
-    return false;
+    return true;
 }
 
 void print_hashtable(node *table[HASH_SIZE]) {
@@ -140,7 +146,7 @@ void print_hashtable(node *table[HASH_SIZE]) {
             // print out each word 
             node *cursor = table[i];
             while (cursor != NULL) {
-                printf("%s", *cursor -> word);
+                printf("%s", cursor -> word);
                 cursor = cursor -> next;
             }
             printf("\n");
@@ -169,6 +175,8 @@ int main(int argc, char *argv[]) {
     
     // remember dictionary
     char* dictionary = (argc == 3) ? argv[1]: DICTIONARY;
+    
+    printf("We are using the dictionary %s\n", dictionary);
     
     load(dictionary);
     print_hashtable(hashtable);
