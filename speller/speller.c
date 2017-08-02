@@ -64,6 +64,26 @@ bool loaded = false;
 int check(const char *word) {
     /* Checks if word is in our dictionary, returns true if it is
       false otherwise */
+    // fail if dictionary not loaded
+    if (!loaded) {
+        return false;
+    }
+    // traverse the dictionary looking for this word
+    // return true when found
+    
+    node *trav;
+    int i;
+    for (i = 0; i < HASH_SIZE; i++) {
+        trav = hashtable[i];
+        while (trav != NULL) {
+            if (strcasecmp(trav -> word, word) == 0) {
+                return true;
+            }
+            else {
+                trav = trav -> next;
+            }
+        }
+    }
     return false;
 }
 
@@ -203,8 +223,18 @@ int main(int argc, char *argv[]) {
     // remember dictionary
     char* dictionary = (argc == 3) ? argv[1]: DICTIONARY;
     
+    char word[] = "cat";
+    char word2[] = "dog";
+    
     load(dictionary);
     size();
+    check(word);
+    check(word2);
     unload();
     
+    
+    // TODO be able to go through a text file, take out the words 
+    // that have only the alphabet or apostrophes (but don't start with
+    // apostrophes), and have each one of them checked for spelling
+    // then print out how many were mispelled
 }
