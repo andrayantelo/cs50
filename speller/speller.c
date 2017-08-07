@@ -10,6 +10,8 @@
 #define LENGTH 45
 #define DICTIONARY "dictionaries/large"
 
+int unload(void);
+
 unsigned int Pearson16(const char *x, size_t len) {
     size_t i;
     size_t j;
@@ -50,7 +52,7 @@ unsigned int Pearson16(const char *x, size_t len) {
 // Define the node type
 typedef struct node {
     char word[LENGTH + 1];
-    struct node* next;
+    struct node *next;
 } node;
 
 // Declare hashtable variable
@@ -71,19 +73,19 @@ int check(const char *word) {
     // traverse the dictionary looking for this word
     // return true when found
     
-    node *trav;
-    int i;
-    for (i = 0; i < HASH_SIZE; i++) {
-        trav = hashtable[i];
-        while (trav != NULL) {
-            if (strcasecmp(trav -> word, word) == 0) {
-                return true;
-            }
-            else {
-                trav = trav -> next;
-            }
+    node *head = hashtable[Pearson16(word, strlen(word))];
+    
+    node *trav = head;
+    while (trav != NULL) {
+        
+        if (strcasecmp(trav -> word, word) == 0) {
+            return true;
+        }
+        else {
+            trav = trav -> next;
         }
     }
+    
     return false;
 }
 
@@ -101,7 +103,7 @@ int load(const char* dic) {
     }
     
     // declare word variable
-    char word[LENGTH + 1];
+    char word[LENGTH + 1] = {0};
     
     while(fscanf(dic_file, "%s", word) != EOF) {
         // find the hash for the word
@@ -112,6 +114,7 @@ int load(const char* dic) {
         
         // fail if we ran out of memory
         if (new_node == NULL) {
+            unload();
             return false;
         }
                                 
@@ -183,8 +186,9 @@ int unload(void) {
     for (i = 0; i < HASH_SIZE; i++) {
         trav = hashtable[i];
         while (trav != NULL) {
-            free(trav);
+            node *temp = trav;
             trav = trav -> next;
+            free(temp);
         }
     }
     loaded = false;
@@ -215,111 +219,129 @@ int size(void) {
 
 int main(int argc, char *argv[]) {
     
-    // Ensure that you have the correct number of arguments
-    if (argc != 2 && argc != 3) {
-        fprintf(stderr, "Correct usage: ./speller dictionary text\n");
+    // check for correct number of args
+    if (argc != 2 && argc != 3)
+    {
+        printf("Usage: speller [dictionary] text\n");
         return 1;
     }
-    
-    // remember dictionary
-    char* dictionary = (argc == 3) ? argv[1]: DICTIONARY;
-    
-    printf("using dictionary: %s\n", dictionary);
-    
-    // remember text file
-    char* text_file = (argc == 3) ? argv[2] : argv[1];
-    
-    load(dictionary);
-    
-    // open text file
-    FILE *text = fopen(text_file, "r");
-    
-    // check that it opened
-    if (text == NULL) {
-        fprintf(stderr, "Could not open %s\n", text_file);
+
+    // determine dictionary to use
+    char* dictionary = (argc == 3) ? argv[1] : DICTIONARY;
+
+    // load dictionary
+    bool loaded = load(dictionary);
+
+    // abort if dictionary not loaded
+    if (!loaded)
+    {
+        printf("Could not load %s.\n", dictionary);
+        return 1;
+    }
+
+    // try to open text
+    char *text = (argc == 3) ? argv[2] : argv[1];
+    FILE *fp = fopen(text, "r");
+    if (fp == NULL)
+    {
+        printf("Could not open %s.\n", text);
         unload();
         return 1;
     }
-    
-    // go through each word and check the spelling
-    int misspellings = 0;
-    int text_word_count = 0;
-    char word[LENGTH + 1];
-    // which letter are we on in the word
-    int index;
-    
-    int c;
-    for (c = fgetc(text); c != EOF; c = fgetc(text)) {
-        // allow only alphabetical chars
-        // can't start with apostrophe
-        if (isalpha(c) || (c == '\'' && index > 0)) {
-            // append char to word
+
+    // prepare to report misspellings
+    printf("\nMISSPELLED WORDS\n\n");
+
+    // prepare to spell-check
+    int index = 0, misspellings = 0, words = 0;
+    char word[LENGTH+1];
+
+    // spell-check each word in text
+    for (int c = fgetc(fp); c != EOF; c = fgetc(fp))
+    {
+        // allow only alphabetical characters and apostrophes
+        if (isalpha(c) || (c == '\'' && index > 0))
+        {
+            // append character to word
             word[index] = c;
             index++;
-            
-            // ignore words longer than LENGTH
-            if (index > LENGTH) {
-                // eat rest of word
-                while ((c = fgetc(text)) != EOF && isalpha(c));
-                // reset index
+
+            // ignore alphabetical strings too long to be words
+            if (index > LENGTH)
+            {
+                // consume remainder of alphabetical string
+                while ((c = fgetc(fp)) != EOF && isalpha(c));
+
+                // prepare for new word
                 index = 0;
             }
         }
-        // ignore numeric characters
-        else if (isdigit(c)) {
-            // eat the rest of the word
-            while ((c = fgetc(text)) != EOF && isalnum(c));
-            
-            // reset index
+
+        // ignore words with numbers (like MS Word can)
+        else if (isdigit(c))
+        {
+            // consume remainder of alphanumeric string
+            while ((c = fgetc(fp)) != EOF && isalnum(c));
+
+            // prepare for new word
             index = 0;
         }
-        // if we found a whole word
-        else if (index > 0) {
-            // update text word count
-            text_word_count++;
-            // terminate the current word
+
+        // we must have found a whole word
+        else if (index > 0)
+        {
+            // terminate current word
             word[index] = '\0';
-            
-            // check spelling
-            // if it's misspelled you get a 0
-            // if it's spelled correctly you get 1
+
+            // update counter
+            words++;
+
+            // check word's spelling
             bool misspelled = !check(word);
-            
-            if (misspelled) {
+
+            // print word if misspelled
+            if (misspelled)
+            {
                 printf("%s\n", word);
                 misspellings++;
             }
-            // reset index
+
+            // prepare for next word
             index = 0;
         }
-        
     }
-    
-    if (ferror(text)) {
-        fclose(text);
-        printf("Error reading %s.\n", text_file);
+
+    // check whether there was an error
+    if (ferror(fp))
+    {
+        fclose(fp);
+        printf("Error reading %s.\n", text);
         unload();
         return 1;
     }
-    
-    fclose(text);
-    
-    printf("Number of misspelled words: %d\n", misspellings);
-    printf("Number of words in text: %d\n", text_word_count);
-    printf("Number of words in dictionary: %d\n", size());
 
+    // close text
+    fclose(fp);
+
+    // determine dictionary's size
+    unsigned int n = size();
+
+    // unload dictionary
     bool unloaded = unload();
-    if (!unloaded) {
-        printf("could not unload %s\n", dictionary);
+
+    // abort if dictionary not unloaded
+    if (!unloaded)
+    {
+        printf("Could not unload %s.\n", dictionary);
         return 1;
     }
+
+
+    // report benchmarks
+    printf("\nWORDS MISSPELLED:     %d\n", misspellings);
+    printf("WORDS IN DICTIONARY:  %d\n", n);
+    printf("WORDS IN TEXT:        %d\n", words);
     
-    // TODO be able to go through a text file, take out the words 
-    // that have only the alphabet or apostrophes (but don't start with
-    // apostrophes), and have each one of them checked for spelling
-    // then print out how many were misspelled
-    
-    // TODO
-    // print out words in text, words in dictionary as well
+    // that's all folks
     return 0;
 }
