@@ -67,6 +67,8 @@ int check(const char *word) {
     /* Checks if word is in our dictionary, returns true if it is
       false otherwise */
     // fail if dictionary not loaded
+    
+    // TODO it's not case insensitive
     if (!loaded) {
         return false;
     }
