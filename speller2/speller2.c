@@ -173,6 +173,9 @@ int check(char *word) {
     
     // traverse that linked list, and see if the word is there
     int i;
+    node *trav;
+    
+    trav = dictionary -> hashtable[hash_index];
     
 
 int main(int argc, char *argv[]) {
