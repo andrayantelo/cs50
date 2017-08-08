@@ -38,7 +38,7 @@ unsigned int Pearson16(const char *x, size_t len) {
     };
 
     for (j = 0; j < 8; ++j) {
-      h = T[(x[0] + j) % 256];
+      h = T[(tolower(x[0]) + j) % 256];
       for (i = 1; i < len; ++i) {
          h = T[h ^ tolower(x[i])];
       }
