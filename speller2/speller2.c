@@ -74,7 +74,7 @@ typedef struct set_t {
     int wordCount;
 } set_t;
 
-// The dictionary will be a global and available to all functions
+// The dictionary will be a global var and available to all functions
 set_t *dictionary;
 
 /* Creates the dictionary data structure, returns true if successful */
@@ -90,7 +90,8 @@ int load(char *dictionary_name) {
     }
     
     // Initialize dictionary set
-    set_t *dictionary = calloc(1, sizeof(set_t));
+    dictionary = calloc(1, sizeof(set_t));
+    
     
     char word[LENGTH + 1] = {0};
     
@@ -102,7 +103,7 @@ int load(char *dictionary_name) {
         
         //declare new node
         node *new_node = calloc(1, sizeof(node));
-        
+
         strcpy(new_node -> word, word);
         
         // check the hashtable at hash_index and see if
@@ -122,7 +123,7 @@ int load(char *dictionary_name) {
     fclose(dic_file);
     
     loaded = true;
-    return 0;
+    return true;
     
 }
 
@@ -133,7 +134,46 @@ int size(void) {
     if (loaded) {
         return dictionary -> wordCount;
     }
+    return false;
 }
+
+/* Frees all of the malloced memory that happened in the load function,
+returns true if successful */
+
+int unload(void) {
+    if (!loaded) {
+        return false;
+    }
+    
+    int i;
+    // Traverse the hashtable and free nodes
+    node *trav;
+    
+    for (i = 0; i < HASH_SIZE; i++) {
+        // traverse through linked list dictionary -> hashtable[i]
+        // dictionary -> hashtable[i] is a node pointer
+        trav = dictionary -> hashtable[i];
+        while (trav != NULL) {
+            node *temp = trav;
+            trav = trav -> next;
+            free(temp);
+        }
+    }
+    // free the dictionary as well
+    free(dictionary);
+    return true;
+}
+
+/* Checks to see if the word given is in the dictionary, returns true
+if it is */
+
+int check(char *word) {
+    // find the linked list this word would be in
+    int hash_index = Pearson16(word, strlen(word));
+    
+    // traverse that linked list, and see if the word is there
+    int i;
+    
 
 int main(int argc, char *argv[]) {
     
@@ -151,6 +191,9 @@ int main(int argc, char *argv[]) {
     
     // Create dictionary
     load(dictionary);
+    
+    // Unload dictionary
+    unload();
     
     return 0;
 }
