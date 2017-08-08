@@ -165,7 +165,7 @@ int unload(void) {
 }
 
 /* Checks to see if the word given is in the dictionary, returns true
-if it is */
+if it is in the dictionary*/
 
 int check(char *word) {
     // find the linked list this word would be in
@@ -176,6 +176,16 @@ int check(char *word) {
     node *trav;
     
     trav = dictionary -> hashtable[hash_index];
+    while (trav != NULL) {
+        int cmp = strcasecmp(word, trav -> word);
+        if (cmp == 0) {
+            return true;
+        }
+        trav = trav -> next;
+    }
+    // word is not in dictionary
+    return false;
+}
     
 
 int main(int argc, char *argv[]) {
@@ -192,11 +202,76 @@ int main(int argc, char *argv[]) {
     // Remember the text file
     char *text_file = (argc == 3) ? argv[2]: argv[1];
     
+    // open text file
+    FILE *text = fopen(text_file, "r");
+    
+    // check it opened
+    if (text == NULL) {
+        fprintf(stderr, "Could not open %s.\n", text_file);
+        return 1;
+    }
+    
     // Create dictionary
     load(dictionary);
     
+    int letter_index = 0;
+    int wordCount = 0;
+    int misspellings = 0;
+    char word[LENGTH + 1];
+    int c;
+    
+    // check the words in the text file one by one
+    while ((c = fgetc(text)) != EOF) {
+        // make sure letter is alphabetical or apostrophe (if apostrophe
+        // can not be first letter in word)
+        if (isalpha(c) || (c == '\'' && letter_index != 0)) {
+            word[letter_index] = c;
+        }
+        // make sure word isn't too long
+        else if (letter_index > LENGTH) {
+            // eat rest of word
+            while((c = fgetc(text) != EOF) && isalpha(c));
+            // get ready for next word
+            letter_index = 0;
+        }
+        // make sure it's not numerical
+        else if (isdigit(c)) {
+            // eat rest of word
+            while((c = fgetc(text) != EOF) && isalpha(c));
+            // get ready for next word
+            letter_index = 0;
+        }
+        // if c is not alphabetical, ', or numerical, then 
+        // we must have reached the end of a word
+        else {
+            // incrememnt word counter
+            wordCount++;
+            
+            // Check if word is in dictionary
+            int misspelled = check(word);
+            if (misspelled) {
+                misspellings++;
+                printf("%s\n", word);
+            }
+            
+            // Prepare for next word
+            letter_index = 0;
+        }
+        
+    }
+    
+    // close text file
+    fclose(text);
+    
     // Unload dictionary
     unload();
+    
+    int dictionary_size = size();
+    // check that unloaded correctly TODO
+    
+    printf("MISSPELLINGS: %d\n", misspellings);
+    printf("TEXT SIZE: %d\n", wordCount);
+    printf("DICTIONARY SIZE: %d\n", dictionary_size);
     
     return 0;
 }
