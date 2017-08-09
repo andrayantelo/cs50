@@ -137,6 +137,20 @@ int size(void) {
     return false;
 }
 
+
+void free_node(node *n) {
+    // travel through linked list n freeing the nodes
+    // as you go along
+    
+    node *trav;
+    trav = n;
+    
+    while (trav != NULL) {
+        node *temp = trav;
+        trav = trav -> next;
+        free(temp);
+    }
+}
 /* Frees all of the malloced memory that happened in the load function,
 returns true if successful */
 
@@ -150,14 +164,7 @@ int unload(void) {
     node *trav;
     
     for (i = 0; i < HASH_SIZE; i++) {
-        // traverse through linked list dictionary -> hashtable[i]
-        // dictionary -> hashtable[i] is a node pointer
-        trav = dictionary -> hashtable[i];
-        while (trav != NULL) {
-            node *temp = trav;
-            trav = trav -> next;
-            free(temp);
-        }
+        free_node(dictionary -> hashtable[i]);
     }
     // free the dictionary as well
     free(dictionary);
@@ -221,34 +228,40 @@ int main(int argc, char *argv[]) {
     int c;
     
     // check the words in the text file one by one
-    while ((c = fgetc(text)) != EOF) {
+    for (c = fgetc(text); c != EOF; c = fgetc(text)) {
         // make sure letter is alphabetical or apostrophe (if apostrophe
         // can not be first letter in word)
         if (isalpha(c) || (c == '\'' && letter_index != 0)) {
             word[letter_index] = c;
-        }
-        // make sure word isn't too long
-        else if (letter_index > LENGTH) {
-            // eat rest of word
-            while((c = fgetc(text) != EOF) && isalpha(c));
-            // get ready for next word
-            letter_index = 0;
+            
+            // increment letter index
+            letter_index++;
+            
+            // ignore words too long
+            if (letter_index > LENGTH) {
+                // eat rest of word
+                while((c = fgetc(text) != EOF) && isalpha(c));
+                // get ready for next word
+                letter_index = 0;
+            }
         }
         // make sure it's not numerical
         else if (isdigit(c)) {
             // eat rest of word
-            while((c = fgetc(text) != EOF) && isalpha(c));
+            while((c = fgetc(text) != EOF) && isalnum(c));
             // get ready for next word
             letter_index = 0;
         }
         // if c is not alphabetical, ', or numerical, then 
         // we must have reached the end of a word
-        else {
+        else if (letter_index > 0) {
+            // Terminate current word
+            word[letter_index] = '\0';
             // incrememnt word counter
             wordCount++;
             
             // Check if word is in dictionary
-            int misspelled = check(word);
+            bool misspelled = !check(word);
             if (misspelled) {
                 misspellings++;
                 printf("%s\n", word);
