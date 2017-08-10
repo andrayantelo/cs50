@@ -72,11 +72,25 @@ int load(char *dictionary) {
         }
         cursor -> is_word = true;
     }
-    return 0;
+    return true;
 }
 
+/* Returns true if word is in the trie (dictionary)*/
 int check(char *word) {
+    // Go through trie and see if word is in there
+    node *cursor = root;
     
+    int i;
+    for (i = 0; i < strlen(word); i++) {
+        int letter_index = alpha_index(word[i]);
+        if (cursor -> children[letter_index] == NULL) {
+            return false;
+        }
+        else {
+            cursor = cursor -> children[letter_index];
+        }
+    }
+    return (cursor -> is_word) ? true: false;
 }
 
 int main(int argc, char *argv[]) {
