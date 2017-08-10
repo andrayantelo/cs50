@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 
 #define DICTIONARY "dictionaries/large"
 #define LENGTH 45
@@ -23,6 +25,20 @@ typedef struct node {
 
 node *root;
 
+/* Returns the index of the letter in the alphabet, must be case
+insensitive */
+int alpha_index(char c) {
+    if (c == '\'') {
+        return 27;
+    }
+    else if (islower(c)) {
+        return c - 97;
+    }
+    else {
+        return c - 65;
+    }
+}
+
 int load(char *dictionary) {
     // open dictionary
     FILE* dic_file = fopen(dictionary, "r");
@@ -34,7 +50,33 @@ int load(char *dictionary) {
     
     // Initialize root node
     root = calloc(1, sizeof(node));
+    
+    node *cursor = calloc(1, sizeof(node));
+    cursor = root;
+    
+    char word[LENGTH + 1] = {0};
+    int i;
+    int letter_index;
+    
+    // read dictionary word per word
+    // insert each word letter by letter into trie
+    while ((fscanf(dic_file, "%s", word)) != EOF) {
+        for (i = 0; i < strlen(word); i++) {
+            letter_index = alpha_index(word[i]);
+            node *new_node = calloc(1, sizeof(node));
+            
+            if (cursor -> children[letter_index] == NULL) {
+                cursor -> children[letter_index] = new_node;
+            }
+            cursor = cursor -> children[letter_index];
+        }
+        cursor -> is_word = true;
+    }
     return 0;
+}
+
+int check(char *word) {
+    
 }
 
 int main(int argc, char *argv[]) {
