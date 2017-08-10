@@ -23,6 +23,9 @@ typedef struct node {
     struct node *children[NUM_CHAR];
 } node;
 
+
+// TODO have a pointer to the root? Have root be a pointer
+// to the pointer of the first node?
 node *root;
 
 /* Returns the index of the letter in the alphabet, must be case
@@ -51,8 +54,8 @@ int load(char *dictionary) {
     // Initialize root node
     root = calloc(1, sizeof(node));
     
-    node *cursor = calloc(1, sizeof(node));
-    cursor = root;
+    node *cursor;
+    cursor = root -> children;
     
     char word[LENGTH + 1] = {0};
     int i;
@@ -65,8 +68,8 @@ int load(char *dictionary) {
             letter_index = alpha_index(word[i]);
             node *new_node = calloc(1, sizeof(node));
             
-            if (cursor -> children[letter_index] == NULL) {
-                cursor -> children[letter_index] = new_node;
+            if (cursor[letter_index] == NULL) {
+                cursor[letter_index] = new_node;
             }
             cursor = cursor -> children[letter_index];
         }
@@ -106,6 +109,65 @@ int main(int argc, char *argv[]) {
     // Remember text
     char *text = (argc == 3) ? argv[2]: argv[1];
     
+    // Open text
+    FILE *fp = fopen(text, "r");
+    
+    if (fp == NULL) {
+        fprintf(stderr, "Could not open %s.\n", text);
+        return 1;
+    }
+    
     load(dictionary);
+    
+    // Go through each word in text, and check if that word
+    // is in the dictionary
+    /*char word[LENGTH + 1];
+    int misspellings = 0;
+    int wordCount = 0;
+    int index = 0;
+    char c;
+    for (c = fgetc(fp); c != EOF; c = fgetc(fp)) {
+        // Check c is alphabetical or '\''
+        if (isalpha(c) || (c == '\'' && index > 0)) {
+            word[index] = c;
+            // check that the word isn't too long
+            if (index > LENGTH) {
+                // eat word, reset index
+                while((c = fgetc(fp) != EOF) && isalpha(c));
+                index = 0;
+            }
+            index++;
+        }
+        // check if c is a digit
+        else if (isdigit(c)) {
+            while((c = fgetc(fp) != EOF) && isalnum(c));
+            index = 0;
+        }
+        // if index > 0, and c is neither a digit or letter, we must
+        // be at the end of a word
+        else if (index > 0) {
+            // finish word with \0
+            word[index] = '\0';
+            //  Increment wordCount
+            wordCount++;
+            
+            // check if word is in dictionary
+            bool misspelled = !check(word);
+            
+            if (misspelled) {
+                printf("%s\n", word);
+                misspellings++;
+            }
+            // reset index for next word
+            index = 0;
+        }
+    }*/
+    // print out dict size, text word count, and number of
+    // misspelled words
+    //printf("TEXT WORD COUNT: %d\n", wordCount);
+    //printf("MISSPELLED: %d\n", misspellings);
+    //printf("DICTIONARY SIZE: %d\n", size());
+    
+    fclose(fp);
     return 0;
 }
